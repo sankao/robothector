@@ -1,5 +1,10 @@
 import pygame
-import RPi.GPIO as GPIO
+try:
+    import RPi.GPIO as GPIO
+    has_pi = True
+except:
+    print('no rpi found')
+    has_pi = False
 from time import sleep
 PWM_PIN=12
 RELAY_1_PIN=11
@@ -12,24 +17,27 @@ BLACK = pygame.Color('black')
 WHITE = pygame.Color('white')
 
 def go_forward():
-    GPIO.output(RELAY_1_PIN, False)
-    GPIO.output(RELAY_2_PIN, True)
-    GPIO.output(RELAY_3_PIN, True)
-    GPIO.output(RELAY_4_PIN, False)
+    if has_pi:
+        GPIO.output(RELAY_1_PIN, False)
+        GPIO.output(RELAY_2_PIN, True)
+        GPIO.output(RELAY_3_PIN, True)
+        GPIO.output(RELAY_4_PIN, False)
     print(f'going forward, relay 1 True, relay 2 False,relay 3 False,relay 4 True')
 
 def go_backward():
-    GPIO.output(RELAY_1_PIN, True)
-    GPIO.output(RELAY_2_PIN, False)
-    GPIO.output(RELAY_3_PIN, False)
-    GPIO.output(RELAY_4_PIN, True)
+    if has_pi:
+        GPIO.output(RELAY_1_PIN, True)
+        GPIO.output(RELAY_2_PIN, False)
+        GPIO.output(RELAY_3_PIN, False)
+        GPIO.output(RELAY_4_PIN, True)
     print(f'going backward, relay 1 False, relay 2 True,relay 3 True,relay 4 False')
 
 def stop_moving():
-    GPIO.output(RELAY_1_PIN, True)
-    GPIO.output(RELAY_2_PIN, True)
-    GPIO.output(RELAY_3_PIN, True)
-    GPIO.output(RELAY_4_PIN, True)
+    if has_pi:
+        GPIO.output(RELAY_1_PIN, True)
+        GPIO.output(RELAY_2_PIN, True)
+        GPIO.output(RELAY_3_PIN, True)
+        GPIO.output(RELAY_4_PIN, True)
     print(f'stopping, relay 1 False, relay 2 False,relay 3 False,relay 4 False')
 
 
@@ -61,24 +69,26 @@ class TextPrint(object):
 
 
 def SetAngle(angle):
-    duty = angle / 18 + 2
-    GPIO.output(PWM_PIN, True)
-    pwm.ChangeDutyCycle(duty)
-    sleep(0.3)
-    GPIO.output(PWM_PIN, False)
-    pwm.ChangeDutyCycle(0)
+    if has_pi:
+        duty = angle / 18 + 2
+        GPIO.output(PWM_PIN, True)
+        pwm.ChangeDutyCycle(duty)
+        sleep(0.3)
+        GPIO.output(PWM_PIN, False)
+        pwm.ChangeDutyCycle(0)
 
 pygame.init()
 
-GPIO.setmode(GPIO.BOARD)
-GPIO.setup(PWM_PIN, GPIO.OUT)
-GPIO.setup(RELAY_1_PIN, GPIO.OUT)
-GPIO.setup(RELAY_2_PIN, GPIO.OUT)
-GPIO.setup(RELAY_3_PIN, GPIO.OUT)
-GPIO.setup(RELAY_4_PIN, GPIO.OUT)
-stop_moving()
-pwm=GPIO.PWM(PWM_PIN, 50)
-pwm.start(0)
+if has_pi:
+    GPIO.setmode(GPIO.BOARD)
+    GPIO.setup(PWM_PIN, GPIO.OUT)
+    GPIO.setup(RELAY_1_PIN, GPIO.OUT)
+    GPIO.setup(RELAY_2_PIN, GPIO.OUT)
+    GPIO.setup(RELAY_3_PIN, GPIO.OUT)
+    GPIO.setup(RELAY_4_PIN, GPIO.OUT)
+    stop_moving()
+    pwm=GPIO.PWM(PWM_PIN, 50)
+    pwm.start(0)
 # Set the width and height of the screen (width, height).
 screen = pygame.display.set_mode((500, 700))
 
@@ -233,5 +243,6 @@ while not done:
 # If you forget this line, the program will 'hang'
 # on exit if running from IDLE.
 pwm.stop()
-GPIO.cleanup()
+if has_pi:
+    GPIO.cleanup()
 pygame.quit()
