@@ -117,6 +117,10 @@ load_img(imgs, 'on_mission')
 load_img(imgs, 'on_mission_firefighter')
 load_img(imgs, 'on_mission_ambulance')
 
+reverse_snd = pygame.mixer.Sound('reverse.wav')
+firefighter_snd = pygame.mixer.Sound('firefighter.wav')
+ambulance_snd = pygame.mixer.Sound('ambulance.wav')
+
 mission_flag = 'idle'
 mode_flag = ''
 
@@ -242,6 +246,11 @@ while not done:
                 #print(f'pin {RELAY_1_PIN} off')
                 prev_direction = -0.5
                 mission_flag = 'on_mission'
+                if mode_flag == 'firefighter':
+                    firefighter_snd.play()
+                elif mode_flag == 'ambulance':
+                    ambulance_snd.play()
+                reverse_snd.stop()
         elif joy_y < 0.5:
             if prev_direction != 0:
                 stop_moving()
@@ -249,6 +258,9 @@ while not done:
                 #print(f'pin {RELAY_1_PIN} off')
                 prev_direction = 0
                 mission_flag = 'idle'
+                firefighter_snd.stop()
+                ambulance_snd.stop()
+                reverse_snd.stop()
         else:
             if prev_direction != 0.5:
                 go_forward()
@@ -256,6 +268,9 @@ while not done:
                 #print(f'pin {RELAY_1_PIN} on')
                 prev_direction = 0.5
                 mission_flag = 'idle'
+                firefighter_snd.stop()
+                ambulance_snd.stop()
+                reverse_snd.play(loops=10)
         #SetAngle(180 + joystick.get_axs(0) * 180)
 
     screen.blit(imgs[get_image(mission_flag, mode_flag)], (50, 50))
