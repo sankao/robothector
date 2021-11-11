@@ -77,6 +77,16 @@ def SetAngle(angle):
         GPIO.output(PWM_PIN, False)
         pwm.ChangeDutyCycle(0)
 
+def load_img(imgs, name):
+    img = pygame.image.load(name + '.png')
+    img = pygame.transform.scale(img, (800,480))
+    imgs[name] = img
+
+def get_image(mission_flag, mode_flag):
+    if mode_flag:
+        return mission_flag+'_'+mode_flag
+    return mission_flag
+
 pygame.init()
 
 if has_pi:
@@ -90,7 +100,7 @@ if has_pi:
     pwm=GPIO.PWM(PWM_PIN, 50)
     pwm.start(0)
 # Set the width and height of the screen (width, height).
-screen = pygame.display.set_mode((500, 700))
+screen = pygame.display.set_mode((800, 480))
 
 pygame.display.set_caption("My Game")
 
@@ -99,6 +109,16 @@ done = False
 
 # Used to manage how fast the screen updates.
 clock = pygame.time.Clock()
+imgs = {}
+load_img(imgs, 'idle')
+load_img(imgs, 'idle_firefighter')
+load_img(imgs, 'idle_ambulance')
+load_img(imgs, 'on_mission')
+load_img(imgs, 'on_mission_firefighter')
+load_img(imgs, 'on_mission_ambulance')
+
+mission_flag = 'idle'
+mode_flag = ''
 
 # Initialize the joysticks.
 pygame.joystick.init()
@@ -180,6 +200,12 @@ while not done:
             button = joystick.get_button(i)
             textPrint.tprint(screen,
                              "Button {:>2} value: {}".format(i, button))
+        mode_flag = ''
+        if joystick.get_button(4):
+            mode_flag = 'firefighter'
+        if joystick.get_button(5):
+            mode_flag = 'ambulance'
+
         textPrint.unindent()
 
         hats = joystick.get_numhats()
@@ -215,20 +241,24 @@ while not done:
                 #GPIO.output(RELAY_1_PIN, False)
                 #print(f'pin {RELAY_1_PIN} off')
                 prev_direction = -0.5
+                mission_flag = 'on_mission'
         elif joy_y < 0.5:
             if prev_direction != 0:
                 stop_moving()
                 #GPIO.output(RELAY_1_PIN, False)
                 #print(f'pin {RELAY_1_PIN} off')
                 prev_direction = 0
+                mission_flag = 'idle'
         else:
             if prev_direction != 0.5:
                 go_forward()
                 #GPIO.output(RELAY_1_PIN, True)
                 #print(f'pin {RELAY_1_PIN} on')
                 prev_direction = 0.5
+                mission_flag = 'idle'
         #SetAngle(180 + joystick.get_axs(0) * 180)
 
+    screen.blit(imgs[get_image(mission_flag, mode_flag)], (50, 50))
     #
     # ALL CODE TO DRAW SHOULD GO ABOVE THIS COMMENT
     #
