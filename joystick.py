@@ -220,16 +220,6 @@ while not done:
                 mode_flag = 'firefighter'
             if joystick.get_button(5):
                 mode_flag = 'ambulance'
-        else:
-            if firefighter_pressed():
-                mode_flag = 'firefighter'
-                #firefighter_snd.play()
-                print('firefighter pressed')
-            else:
-                print('firefighter not pressed')
-            # if ambulance_pressed():
-            #     mode_flag = 'ambulance'
-            #     ambulance_snd.play()
 
         textPrint.unindent()
 
@@ -294,6 +284,13 @@ while not done:
                 reverse_snd.play(loops=10)
         #SetAngle(180 + joystick.get_axs(0) * 180)
 
+    if has_pi:
+        if firefighter_pressed():
+            mode_flag = 'firefighter'
+            #firefighter_snd.play()
+            print('firefighter pressed')
+        else:
+            print('firefighter not pressed')
     screen.blit(imgs[get_image(mission_flag, mode_flag)], (50, 50))
     #
     # ALL CODE TO DRAW SHOULD GO ABOVE THIS COMMENT
