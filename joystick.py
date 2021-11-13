@@ -223,10 +223,11 @@ while not done:
         else:
             if firefighter_pressed():
                 mode_flag = 'firefighter'
-                firefighter_snd.play()
-            if ambulance_pressed():
-                mode_flag = 'ambulance'
-                ambulance_snd.play()
+                #firefighter_snd.play()
+                print 'firefighter pressed'
+            # if ambulance_pressed():
+            #     mode_flag = 'ambulance'
+            #     ambulance_snd.play()
 
         textPrint.unindent()
 
