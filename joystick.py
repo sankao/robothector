@@ -287,13 +287,13 @@ while not done:
     if has_pi:
         if firefighter_pressed():
             mode_flag = 'firefighter'
-            firefighter_snd.play(maxtime=5)
+            firefighter_snd.play(maxtime=5000)
             print('firefighter pressed')
         else:
             print('firefighter not pressed')
         if ambulance_pressed():
             mode_flag = 'ambulance'
-            ambulance_snd.play(maxtime=2)
+            ambulance_snd.play(maxtime=2000)
             print('ambulance pressed')
         else:
             print('ambulance not pressed')
