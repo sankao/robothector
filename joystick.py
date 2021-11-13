@@ -12,7 +12,7 @@ RELAY_2_PIN=13
 RELAY_3_PIN=15
 RELAY_4_PIN=16
 FIREFIGTHER_PIN=36
-AMBULANCE_PIN=40
+AMBULANCE_PIN=38
 
 # Define some colors.
 BLACK = pygame.Color('black')
@@ -44,11 +44,11 @@ def stop_moving():
 
 def firefighter_pressed():
     if has_pi:
-        return GPIO.input(FIREFIGTHER_PIN)
+        return GPIO.input(FIREFIGTHER_PIN) == False
 
 def ambulance_pressed():
     if has_pi:
-        return GPIO.input(AMBULANCE_PIN)
+        return GPIO.input(AMBULANCE_PIN) == False
 
 # This is a simple class that will help us print to the screen.
 # It has nothing to do with the joysticks, just outputting the
@@ -287,10 +287,16 @@ while not done:
     if has_pi:
         if firefighter_pressed():
             mode_flag = 'firefighter'
-            #firefighter_snd.play()
+            firefighter_snd.play()
             print('firefighter pressed')
         else:
             print('firefighter not pressed')
+        if ambulance_pressed():
+            mode_flag = 'ambulance'
+            ambulance_snd.play()
+            print('ambulance pressed')
+        else:
+            print('ambulance not pressed')
     screen.blit(imgs[get_image(mission_flag, mode_flag)], (50, 50))
     #
     # ALL CODE TO DRAW SHOULD GO ABOVE THIS COMMENT
