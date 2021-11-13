@@ -11,7 +11,7 @@ RELAY_1_PIN=11
 RELAY_2_PIN=13
 RELAY_3_PIN=15
 RELAY_4_PIN=16
-FIREFIGTHER_PIN=38
+FIREFIGTHER_PIN=36
 AMBULANCE_PIN=40
 
 # Define some colors.
@@ -224,7 +224,9 @@ while not done:
             if firefighter_pressed():
                 mode_flag = 'firefighter'
                 #firefighter_snd.play()
-                print 'firefighter pressed'
+                print('firefighter pressed')
+            else:
+                print('firefighter not pressed')
             # if ambulance_pressed():
             #     mode_flag = 'ambulance'
             #     ambulance_snd.play()
