@@ -11,6 +11,8 @@ RELAY_1_PIN=11
 RELAY_2_PIN=13
 RELAY_3_PIN=15
 RELAY_4_PIN=16
+FIREFIGTHER_PIN=21
+AMBULANCE_PIN=20
 
 # Define some colors.
 BLACK = pygame.Color('black')
@@ -40,8 +42,13 @@ def stop_moving():
         GPIO.output(RELAY_4_PIN, True)
     print(f'stopping, relay 1 False, relay 2 False,relay 3 False,relay 4 False')
 
+def firefighter_pressed():
+    if has_pi:
+        return GPIO.input(FIREFIGTHER_PIN)
 
-
+def ambulance_pressed():
+    if has_pi:
+        return GPIO.input(AMBULANCE_PIN)
 
 # This is a simple class that will help us print to the screen.
 # It has nothing to do with the joysticks, just outputting the
@@ -96,6 +103,8 @@ if has_pi:
     GPIO.setup(RELAY_2_PIN, GPIO.OUT)
     GPIO.setup(RELAY_3_PIN, GPIO.OUT)
     GPIO.setup(RELAY_4_PIN, GPIO.OUT)
+    GPIO.setup(FIREFIGTHER_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    GPIO.setup(AMBULANCE_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
     stop_moving()
     pwm=GPIO.PWM(PWM_PIN, 50)
     pwm.start(0)
@@ -131,6 +140,7 @@ pygame.joystick.init()
 textPrint = TextPrint()
 prev_angle = -1
 prev_direction = 0
+mode_flag = ''
 # -------- Main Program Loop -----------
 while not done:
     #
@@ -204,11 +214,19 @@ while not done:
             button = joystick.get_button(i)
             textPrint.tprint(screen,
                              "Button {:>2} value: {}".format(i, button))
-        mode_flag = ''
-        if joystick.get_button(4):
-            mode_flag = 'firefighter'
-        if joystick.get_button(5):
-            mode_flag = 'ambulance'
+        if not has_pi:
+            mode_flag = ''
+            if joystick.get_button(4):
+                mode_flag = 'firefighter'
+            if joystick.get_button(5):
+                mode_flag = 'ambulance'
+        else:
+            if firefighter_pressed():
+                mode_flag = 'firefighter'
+                firefighter_snd.play()
+            if ambulance_pressed():
+                mode_flag = 'ambulance'
+                ambulance_snd.play()
 
         textPrint.unindent()
 
