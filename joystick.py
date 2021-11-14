@@ -252,21 +252,15 @@ while not done:
         joy_y = joystick.get_axis(1)
         if joy_y < -0.5:
             if prev_direction != -0.5:
-                go_backward()
-                #GPIO.output(RELAY_1_PIN, False)
-                #print(f'pin {RELAY_1_PIN} off')
                 prev_direction = -0.5
-                mission_flag = 'on_mission'
-                if mode_flag == 'firefighter':
-                    firefighter_snd.play()
-                elif mode_flag == 'ambulance':
-                    ambulance_snd.play()
-                reverse_snd.stop()
+                go_forward()
+                mission_flag = 'idle'
+                firefighter_snd.stop()
+                ambulance_snd.stop()
+                reverse_snd.play(loops=10)
         elif joy_y < 0.5:
             if prev_direction != 0:
                 stop_moving()
-                #GPIO.output(RELAY_1_PIN, False)
-                #print(f'pin {RELAY_1_PIN} off')
                 prev_direction = 0
                 mission_flag = 'idle'
                 firefighter_snd.stop()
@@ -274,14 +268,14 @@ while not done:
                 reverse_snd.stop()
         else:
             if prev_direction != 0.5:
-                go_forward()
-                #GPIO.output(RELAY_1_PIN, True)
-                #print(f'pin {RELAY_1_PIN} on')
                 prev_direction = 0.5
-                mission_flag = 'idle'
-                firefighter_snd.stop()
-                ambulance_snd.stop()
-                reverse_snd.play(loops=10)
+                go_backward()
+                mission_flag = 'on_mission'
+                if mode_flag == 'firefighter':
+                    firefighter_snd.play()
+                elif mode_flag == 'ambulance':
+                    ambulance_snd.play()
+                reverse_snd.stop()
         #SetAngle(180 + joystick.get_axs(0) * 180)
 
     if has_pi:
