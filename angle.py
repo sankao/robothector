@@ -24,10 +24,18 @@ if has_pi:
     pwm.start(0)
 
 
-for i in range(0, 180, 10):
-    print(f'setting angle {i}')
-    SetAngle(i)
-    time.sleep(5)
+for i in range(25, 125, 5):
+    duty = 0.1 * i
+    print(f'setting duty cycle {duty}')
+    if has_pi:
+        GPIO.output(PWM_PIN, True)
+        pwm.ChangeDutyCycle(duty)
+    sleep(2)
+    if has_pi:
+        GPIO.output(PWM_PIN, False)
+        pwm.ChangeDutyCycle(0)
+    print(f'setting duty cycle {0}')
+    time.sleep(2)
 
 if has_pi:
     GPIO.cleanup()
