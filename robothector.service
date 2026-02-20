@@ -1,0 +1,16 @@
+[Unit]
+Description=Robothector Robot Server
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=robothector
+WorkingDirectory=/home/robothector/robothector
+ExecStart=/home/robothector/.local/bin/uv run python -m server.main
+Restart=on-failure
+RestartSec=5
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=multi-user.target
