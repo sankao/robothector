@@ -60,8 +60,8 @@ def main():
                             screen = pygame.display.set_mode((ui.SCREEN_W, ui.SCREEN_H), pygame.FULLSCREEN)
                         else:
                             screen = pygame.display.set_mode((ui.SCREEN_W, ui.SCREEN_H))
-                elif event.type == pygame.JOYBUTTONDOWN:
-                    joystick.handle_button_event(event)
+                elif event.type in (pygame.JOYBUTTONDOWN, pygame.JOYDEVICEADDED, pygame.JOYDEVICEREMOVED):
+                    joystick.handle_event(event)
 
             input_data = joystick.get_input()
             network.send_drive(input_data["axis_x"], input_data["axis_y"])

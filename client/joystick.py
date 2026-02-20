@@ -17,9 +17,16 @@ _current_mode = ""
 
 
 def init():
-    """Initialize pygame joystick subsystem and open first gamepad."""
-    global _joystick
+    """Initialize pygame joystick subsystem and open first gamepad if present."""
     pygame.joystick.init()
+    _open_first_joystick()
+
+
+def _open_first_joystick():
+    """Try to open the first available joystick."""
+    global _joystick
+    if _joystick is not None:
+        return
     count = pygame.joystick.get_count()
     if count == 0:
         _log("no joystick found — using neutral values")
@@ -38,15 +45,23 @@ def cleanup():
     pygame.joystick.quit()
 
 
-def handle_button_event(event: pygame.event.Event):
-    """Process a JOYBUTTONDOWN event to toggle mode."""
-    global _current_mode
-    if event.type != pygame.JOYBUTTONDOWN:
-        return
-    if event.button == BUTTON_L1:
-        _current_mode = "" if _current_mode == "firefighter" else "firefighter"
-    elif event.button == BUTTON_R1:
-        _current_mode = "" if _current_mode == "ambulance" else "ambulance"
+def handle_event(event: pygame.event.Event):
+    """Process joystick-related events (buttons, hotplug)."""
+    global _joystick, _current_mode
+
+    if event.type == pygame.JOYDEVICEADDED:
+        _log(f"controller connected (device {event.device_index})")
+        _open_first_joystick()
+
+    elif event.type == pygame.JOYDEVICEREMOVED:
+        _log("controller disconnected")
+        _joystick = None
+
+    elif event.type == pygame.JOYBUTTONDOWN:
+        if event.button == BUTTON_L1:
+            _current_mode = "" if _current_mode == "firefighter" else "firefighter"
+        elif event.button == BUTTON_R1:
+            _current_mode = "" if _current_mode == "ambulance" else "ambulance"
 
 
 def get_input() -> dict:
