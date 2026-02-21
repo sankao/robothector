@@ -45,13 +45,14 @@ class ControlServer:
     async def _handle_client(self, ws):
         """Handle a single WebSocket client connection."""
         if self._client is not None:
-            await ws.send(json.dumps({
-                "type": "error",
-                "message": "another client is already connected",
-            }))
-            await ws.close()
-            _log("rejected extra client")
-            return
+            _log("kicking previous client")
+            try:
+                await self._client.close()
+            except Exception:
+                pass
+            self._client = None
+            _safe_stop()
+            sirens.stop_sirens()
 
         self._client = ws
         self._last_message_time = time.monotonic()
