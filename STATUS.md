@@ -88,25 +88,74 @@ No audio messages defined yet — Phase 4 will extend.
 - Auto-discovery via mDNS and UDP beacon (no manual IP needed)
 - Graceful no-Pi fallback so the server boots cleanly on dev machines for code work
 
-## What's missing for Phase 4
+## Phase 4 — detailed breakdown
 
-Hardware-side, ordered:
+The implementation is split into independently-shippable sub-phases. Sub-phases 4a-4e are pure code and can be developed on any laptop with `uv add pytest sounddevice numpy`. Sub-phase 4z is the hardware bringup, parallelisable with 4a-4e.
+
+### 4a — Protocol module + tests (no hardware, no audio)
+
+Foundation. Replaces ad-hoc JSON parsing in `server/control.py` with a typed message layer that both ends share, and lays down the testing infrastructure for everything that follows.
+
+- `protocol/__init__.py`, `protocol/messages.py` — frozen dataclasses for every WS message (existing: `drive`, `mode`, `ping`, `state`, `pong`, `error`; new: `audio_listen`, `audio_talk`)
+- `protocol/messages.py` — `parse_client_message(raw_json: str) -> ClientMessage` with input validation; `serialize(msg) -> str` for outgoing
+- `tests/test_protocol_messages.py` — round-trip tests, range validation (axis_x/y in [-1, 1]), unknown-type rejection, version compatibility (extra fields ignored)
+- `pyproject.toml` — add `[tool.pytest.ini_options]`, optional `dev` group with `pytest`
+- `docs/protocol.md` — extend with `audio_listen` / `audio_talk` message specs and the new `state` fields
+- `server/control.py` — refactored to dispatch via `protocol.messages` (motors/sirens dispatch unchanged externally)
+- `tests/test_server_control.py` — feed scripted message sequences into a `ControlServer`, assert motor/siren state, validates dead-man's switch with a fake clock
+
+### 4b — Audio packet format + jitter buffer (no hardware)
+
+Pure-data layer. Defines the wire format for PCM-over-UDP and the reorder buffer that absorbs network jitter. Fully unit-testable with synthetic packets.
+
+- `protocol/audio_packet.py` — `AudioPacket` dataclass with `to_bytes()` / `from_bytes()`, 12-byte header (magic, seq, timestamp_ms, sample_count) + S16_LE mono payload
+- `protocol/jitter_buffer.py` — `JitterBuffer` class: push out-of-order packets, pop in-sequence with silence fill on loss, target depth configurable (default 80 ms = 2 packets)
+- `tests/test_audio_packet.py` — round-trip, malformed input, magic-byte rejection, payload-size validation
+- `tests/test_jitter_buffer.py` — in-order delivery, late-but-recoverable, irrecoverable loss → silence chunk, duplicate suppression, max-depth eviction
+
+### 4c — Audio I/O abstraction (no hardware needed for tests)
+
+Wraps `sounddevice` behind an interface so tests can swap in fakes and so the same code runs on Pi, laptop, and CI without `[Errno -9996] Invalid input device`.
+
+- `protocol/audio_io.py` — `AudioSource` and `AudioSink` ABCs with `read(n_samples) -> bytes` / `write(bytes)` plus `start()` / `stop()`
+- `protocol/audio_io.py` — `SoundDeviceSource`, `SoundDeviceSink` real implementations (lazy import of `sounddevice` so non-audio code still imports cleanly)
+- `protocol/audio_io.py` — `FakeAudioSource` (replays a fixed list of byte chunks), `FakeAudioSink` (appends writes to a list)
+- `tests/test_audio_io_fakes.py` — fakes do what they say
+- The real implementations are smoke-tested manually; no CI-runnable test for them since they need a sound device
+
+### 4d — Server audio module + integration (no hardware)
+
+Wires the packet layer + I/O abstraction into the server's asyncio loop, hung off the WebSocket control plane.
+
+- `server/audio.py` — `AudioServer` class with `capture_loop` (`AudioSource` → UDP send to client on port 5556) and `playback_loop` (UDP recv on port 5557 → `JitterBuffer` → `AudioSink`), both async
+- `server/audio.py` — controlled by `enable_listen(client_addr)` / `disable_listen()` / `enable_talk()` / `disable_talk()` called from `server/control.py`
+- `server/control.py` — handle `audio_listen` and `audio_talk` messages; expose audio state in `state` broadcast
+- `server/main.py` — instantiate `AudioServer` alongside camera/control/sirens with `FakeAudioSource`/`FakeAudioSink` if `sounddevice` import or device open fails
+- `tests/test_server_audio.py` — drive a real `AudioServer` with `FakeAudioSource` + a fake UDP socket pair, assert the right packets land at the configured client address; verify enable/disable cleanly start/stop the threads
+
+### 4e — Client audio module + UI integration (no hardware)
+
+Mirror of the server. Plus push-to-talk wiring on the gamepad.
+
+- `client/audio.py` — `AudioClient` class with capture (mic → UDP server:5557) and playback (UDP :5556 → speakers via `JitterBuffer`)
+- `client/main.py` — bind L1 to push-to-talk: on press, send `audio_talk(enabled=True)` and start capture; on release, stop and send `audio_talk(enabled=False)`. Bind R1 to listen toggle.
+- `client/ui.py` — HUD: 🎤 indicator while transmitting, 🔊 while receiving, mute icon idle
+- `tests/test_client_audio.py` — drive `AudioClient` with `FakeAudioSource` + fake UDP, assert packets, assert PTT state transitions
+
+### 4f — End-to-end loopback (no hardware)
+
+Final integration test before deploying to Pi. Both client and server run on the same laptop, talking to themselves via localhost UDP. Measures round-trip latency.
+
+- `tests/test_loopback_e2e.py` — spawn `AudioServer` + `AudioClient` in the same process, both with `FakeAudioSource` feeding a known sine wave, assert the wave survives the round trip with bounded latency and acceptable packet loss
+- Manual test on the actual laptop with real mic + speakers confirms live audio loop works
+
+### 4z — Hardware bringup (parallel with code, blocks final demo)
 
 1. Move IN2 wire from GPIO 19 (pin 35) → **GPIO 17 (pin 11)**. GPIO 16 is *not* an option (claimed by the I2S overlay for the amp's SD_MODE pin). One-line update to `server/motors.py` accompanies this rewire.
 2. Wire the INMP441 mic (3.3V / GND / I2S BCLK+LRCLK+SD) and the MAX98357A amp (5V / GND / I2S BCLK+LRCLK+DIN + speaker) per `docs/diagrams/wiring.{pdf,svg}`.
 3. Edit `/boot/firmware/config.txt`: enable `dtparam=i2s=on` and `dtoverlay=googlevoicehat-soundcard` (or the custom duplex overlay per `docs/audio-design.md`). Reboot.
-4. Validate with shell: `arecord -D plughw:0 -c1 -r16000 -fS16_LE -d3 test.wav` then `aplay test.wav`. Must work before any Python.
-
-Code-side, ~600 lines total, ordered:
-
-5. `docs/protocol.md` extension: new `audio_listen` and `audio_talk` WS messages
-6. `server/audio.py` (~280 lines): single module with capture thread (mic → UDP :5556) and playback thread (UDP :5557 → amp), enabled/disabled via control.py
-7. `client/audio.py` (~280 lines): mirror — capture thread (Deck mic → UDP :5557) and playback thread (UDP :5556 → speakers)
-8. `client/main.py` + `client/ui.py`: PTT button on L1 (push-to-talk), listen toggle on R1, HUD icons
-9. `requirements-server.txt` + `requirements-client.txt`: add `sounddevice`, `numpy`
-10. End-to-end test: drive + video + listen + push-to-talk simultaneously, latency tuning if needed (target ≤ 300 ms)
-
-The code half can be developed entirely on this laptop with `uv add sounddevice numpy` and a UDP loopback test — no hardware required to write or unit-test it. Hardware is only needed for final ALSA validation and live latency tuning.
+4. Validate with shell: `arecord -D plughw:0 -c1 -r16000 -fS16_LE -d3 test.wav` then `aplay test.wav`. Must work before swapping `FakeAudioSource` → `SoundDeviceSource` in `server/main.py`.
+5. Final demo: drive + video + listen + push-to-talk simultaneously over WiFi, latency target ≤ 300 ms.
 
 ## Active Beads issues
 
