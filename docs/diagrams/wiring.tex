@@ -157,8 +157,12 @@
 
   % ============ TITLE ============
   \node[font=\sffamily\large\bfseries, anchor=south, align=center]
-        at ($(mA)!0.5!(mB) + (0,12mm)$)
+        at ($(mA)!0.5!(mB) + (0,14mm)$)
         {robothector --- wiring (current build + planned audio)};
+  \node[font=\sffamily\footnotesize\itshape, text=black!55, align=center]
+        at ($(mA)!0.5!(mB) + (0,10mm)$)
+        {see \texttt{pi-pinout.pdf} for the full Pi GPIO header
+         and recommended wire colours};
 
   % ============ LEGEND (bottom-right, away from everything) ============
   \node[draw, rounded corners, fill=white, inner sep=4pt,
