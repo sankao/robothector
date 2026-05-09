@@ -1,150 +1,135 @@
 # Robothector - Project Status
 
+> Last refreshed: **2026-05-09**. Phases 0-3 complete. Phase 4 (audio) in progress.
+
 ## What Is It
 
-Robothector is a Raspberry Pi-powered robot vehicle with emergency response themes (firefighter/ambulance). It's being upgraded from a local joystick-controlled prototype into a remotely operated robot controlled from a Steam Deck over WiFi, with live camera feed and (eventually) two-way audio.
+Robothector is a Raspberry Pi-powered robot vehicle with emergency-response themes (firefighter/ambulance) for Hector. It's remotely operated over WiFi from any pygame-compatible client (laptop, Steam Deck, anything with a USB gamepad) with live MJPEG video and (in progress) bidirectional I2S audio so the operator can hear and talk through the robot.
+
+## Phase progress
+
+| Phase | What it covered | Status |
+|---|---|---|
+| 0 | SSH, mDNS, UDP beacon discovery | ✅ done |
+| 1 | Hardware diagnostics (GPIO, camera) | ✅ done |
+| 2 | Refactor to `client/` + `server/` + WS+JSON protocol | ✅ done |
+| 3 | Remote drive + MJPEG video + dead-man's switch + systemd unit | ✅ done |
+| **4** | **Bidirectional I2S audio (mic + amp + speaker)** | **🟠 in progress** |
 
 ## Current Hardware
 
 | Component | Details |
-|-----------|---------|
-| Brain | Raspberry Pi (mounted inside the robot chassis) |
-| Motors | 2x DC motors via L298N H-bridge — tank drive (no servo) |
-| Camera | Pi Camera Module (ribbon cable) |
-| Audio | 3x WAV files for sirens (firefighter, ambulance, reverse) |
-| Buttons | 2x physical GPIO buttons for mode selection (firefighter/ambulance) |
-| Display | 800x480 screen (currently unused in new architecture) |
+|---|---|
+| Brain | Raspberry Pi in chassis |
+| Motors | 2× DC motors via L298N H-bridge, tank drive (no servo, no PWM yet) |
+| Camera | Pi Camera Module (CSI ribbon) |
+| Sirens | 3× WAV files (firefighter, ambulance, reverse) — local pygame.mixer playback |
+| Mode buttons | 2× GPIO buttons (firefighter / ambulance) |
+| Display | 800×480 (carried over, unused in current arch) |
+| Power | Plan: USB-C PD power bank + CH224K trigger @ 9V → L298N + USB-A 5V → Pi (decided 2026-05-09) |
+| Audio modules | INMP441 I2S mic + MAX98357A I2S amp + 4-8Ω speaker — **in hand, not wired** |
 
-### GPIO Pinout (L298N H-bridge)
+### GPIO map (current)
 
-From `pinout.md` — most recent documentation, includes wire colors. **Needs verification over SSH** as code files use different (older) pin assignments.
+| Wire colour | GPIO (BCM) | Board pin | Function |
+|---|---|---|---|
+| brown | 26 | 37 | L298N IN1 |
+| black | 19 | 35 | L298N IN2 |
+| white | 13 | 33 | L298N IN3 |
+| gray  | 6  | 31 | L298N IN4 |
+| — | GND | 39 | common ground |
 
-| Wire | GPIO (BCM) | Board Pin | L298N Function |
-|------|------------|-----------|----------------|
-| brown | 26 | 37 | IN1 |
-| black | 19 | 35 | IN2 |
-| white | 13 | 33 | IN3 |
-| grey | 6 | 31 | IN4 |
+Full reference + planned audio pins + recommended Dupont colours: `docs/diagrams/pi-pinout.{pdf,svg,tex}` and `docs/diagrams/wiring.{pdf,svg,tex}`.
 
-**Known issue**: `joystick.py` and `joystick_test.py` reference BOARD pins 11/13/15/16 (BCM 17/27/22/23) — completely different physical pins. The robot was likely rewired after the code was written. The pinout must be verified before any motor code is trusted.
+## Software state
 
-## Current Software State
+Modular client/server architecture, both ends running pygame + asyncio + websockets:
 
-The codebase is a working prototype — monolithic, single-machine, directly-connected-joystick only.
+### Server (Pi)
 
-### Files
+| Module | Lines | Role |
+|---|---|---|
+| `server/main.py` | 89 | Unified entry point, wires up all subsystems |
+| `server/control.py` | 143 | WebSocket server (port 8765), single-client lock, 500 ms dead-man's switch, 5 Hz state broadcast |
+| `server/motors.py` | 111 | L298N tank drive, arcade-mix from joystick axes |
+| `server/sirens.py` | 68 | pygame.mixer playback for the 3 emergency-vehicle WAVs |
+| `server/camera.py` | 153 | MJPEG streamer @ port 5000 (picamera2 + placeholder fallback) |
+| `server/discovery.py` | 87 | UDP beacon @ port 5555 advertising the Pi as `robothector` |
+| `server/hardware_test.py` | 115 | Diagnostic script — GPIO + camera bringup |
+| `server/motor_test.py` | 73 | H-bridge sanity loop |
+| `scripts/install-service.sh` | — | Installs `robothector.service` systemd unit |
 
-| File | Purpose | Status |
-|------|---------|--------|
-| `joystick.py` (312 lines) | Main control loop: reads joystick, drives motors, plays sirens, renders display | Legacy — will be decomposed |
-| `webapp/app.py` (83 lines) | Flask server streaming MJPEG from Pi camera on port 5000 | Working, has a try/finally syntax bug |
-| `joystick_test.py` | H-bridge motor test (forward/backward/stop loop) | Legacy test script |
-| `angle.py` | RPi.GPIO servo PWM test | Obsolete (no servo in current build) |
-| `angle_pigpio.py` | pigpio servo PWM test | Obsolete (no servo in current build) |
-| `pinout.md` | Hardware pin reference | Needs verification |
-| Assets | 6 PNG images, 3 WAV sirens, L298N datasheet, GPIO diagram | Carried forward |
+### Client (any pygame host)
 
-### What Works Today
+| Module | Lines | Role |
+|---|---|---|
+| `client/main.py` | 100 | pygame main loop, ties joystick → network → video → UI |
+| `client/network.py` | 147 | WebSocket client, reconnect, heartbeat |
+| `client/joystick.py` | 89 | pygame joystick polling, axis normalisation |
+| `client/video.py` | 98 | MJPEG fetch + pygame.image decode |
+| `client/ui.py` | 102 | HUD overlay (mode, RTT, connection state) |
+| `client/discovery.py` | 52 | UDP beacon listener (auto-find robot on the LAN) |
+| `client/test_connection.py` | 127 | One-shot smoke test |
 
-- Joystick reads and motor control (with a directly connected joystick + display)
-- Camera MJPEG streaming to a web browser at `http://<pi-ip>:5000`
-- Emergency mode toggling (firefighter/ambulance) with sirens
-- Graceful fallback when RPi.GPIO isn't available (development on non-Pi machines)
+### Protocol (`docs/protocol.md`)
 
-### What Doesn't Exist Yet
+WebSocket JSON messages:
 
-- No client/server architecture
-- No remote control capability
-- No Steam Deck integration
-- No systemd service
-- No network auto-discovery
-- No safety mechanisms (dead-man's switch)
-- No test suite, linter, or CI/CD
+- Client → server: `drive` (axis_x, axis_y, ~20 Hz), `mode` (firefighter/ambulance/empty), `ping`
+- Server → client: `state` (~5 Hz), `pong`, `error`
 
-## Target Architecture
+No audio messages defined yet — Phase 4 will extend.
 
-```
-Steam Deck (Client)                    Raspberry Pi (Server)
-+--------------------------+           +---------------------------+
-|  Pygame Application      |           |  systemd service          |
-|                          |  WiFi     |                           |
-|  Left Stick (arcade) ----+--WS:8765->|  WebSocket server         |
-|    Y = throttle          |           |    -> arcade mix          |
-|    X = turn              |           |    -> motors.set_motors() |
-|                          |           |    -> dead-man's switch   |
-|  Video Display <---------+-HTTP:5000-|  Flask MJPEG camera       |
-|    640x480 MJPEG         |           |    640x480 from picamera2 |
-|                          |           |                           |
-|  [Future] Mic/Speaker <--+-UDP:5001--+  [Future] Mic/Speaker     |
-|                     -----+-UDP:5002->|                           |
-|                          |           |                           |
-|  Mode buttons (L1/R1)    |           |  Sirens (local playback)  |
-|  HUD overlay             |           |  GPIO → L298N → Motors    |
-+--------------------------+           +---------------------------+
-```
+## What works today
 
-### Key Design Decisions
+- Drive the robot from this laptop (or any pygame host) via Steam Deck *or* a USB gamepad
+- Live MJPEG video on the client window
+- Emergency mode toggle plays local sirens on the robot
+- Auto-discovery via mDNS and UDP beacon (no manual IP needed)
+- Graceful no-Pi fallback so the server boots cleanly on dev machines for code work
 
-- **Tank drive with arcade mixing**: Single left stick. Y = throttle (both motors equally), X = turn (differential: left = throttle+turn, right = throttle-turn)
-- **WebSocket + JSON for control**: Low-latency bidirectional on port 8765. Messages at ~20Hz.
-- **MJPEG over HTTP for video**: Keeps the existing Flask approach. Simple, no codec dependencies, pygame decodes natively.
-- **Dead-man's switch**: Server stops all motors if no control message for 500ms. Non-negotiable safety feature.
-- **mDNS for discovery**: Pi broadcasts as `robothector.local`. UDP beacon as fallback.
-- **Two-port server**: HTTP 5000 (video) + WebSocket 8765 (control). Simple, debuggable.
+## What's missing for Phase 4
 
-## Project Roadmap
+Hardware-side, ordered:
 
-### Phase 0: SSH & Network Discovery [Current Phase]
-Get connected to the Pi inside the robot. No screen/keyboard access.
-- Research Steam Deck networking (SteamOS/mDNS constraints)
-- Configure Avahi on Pi (`robothector.local`)
-- Set up passwordless SSH
-- UDP beacon fallback + connection test script
+1. Move IN2 wire from GPIO 19 (pin 35) → **GPIO 17 (pin 11)**. GPIO 16 is *not* an option (claimed by the I2S overlay for the amp's SD_MODE pin). One-line update to `server/motors.py` accompanies this rewire.
+2. Wire the INMP441 mic (3.3V / GND / I2S BCLK+LRCLK+SD) and the MAX98357A amp (5V / GND / I2S BCLK+LRCLK+DIN + speaker) per `docs/diagrams/wiring.{pdf,svg}`.
+3. Edit `/boot/firmware/config.txt`: enable `dtparam=i2s=on` and `dtoverlay=googlevoicehat-soundcard` (or the custom duplex overlay per `docs/audio-design.md`). Reboot.
+4. Validate with shell: `arecord -D plughw:0 -c1 -r16000 -fS16_LE -d3 test.wav` then `aplay test.wav`. Must work before any Python.
 
-### Phase 1: Hardware Diagnostics
-Verify everything works over SSH before writing server code.
-- Confirm GPIO pinout (resolve the 3-way conflict)
-- Test camera module (libcamera + Picamera2)
-- Build unified hardware test script
+Code-side, ~600 lines total, ordered:
 
-### Phase 2: Foundation & Project Structure
-Restructure the codebase for client/server.
-- Create `server/` and `client/` directories
-- Define WebSocket JSON protocol (`docs/protocol.md`)
-- Extract `server/motors.py` from `joystick.py` (BCM pins, arcade mixing)
-- Extract `server/sirens.py` from `joystick.py`
-- Create `requirements-server.txt` and `requirements-client.txt`
+5. `docs/protocol.md` extension: new `audio_listen` and `audio_talk` WS messages
+6. `server/audio.py` (~280 lines): single module with capture thread (mic → UDP :5556) and playback thread (UDP :5557 → amp), enabled/disabled via control.py
+7. `client/audio.py` (~280 lines): mirror — capture thread (Deck mic → UDP :5557) and playback thread (UDP :5556 → speakers)
+8. `client/main.py` + `client/ui.py`: PTT button on L1 (push-to-talk), listen toggle on R1, HUD icons
+9. `requirements-server.txt` + `requirements-client.txt`: add `sounddevice`, `numpy`
+10. End-to-end test: drive + video + listen + push-to-talk simultaneously, latency tuning if needed (target ≤ 300 ms)
 
-### Phase 3: Client/Server + Video Streaming
-The main build — drive the robot from a Steam Deck.
-- WebSocket control server with dead-man's switch
-- MJPEG camera server (refactored from `webapp/app.py`)
-- Unified server entry point (`python3 -m server.main`)
-- Steam Deck pygame client: joystick input, video display, HUD
-- systemd service for auto-start on Pi
-- End-to-end integration test
+The code half can be developed entirely on this laptop with `uv add sounddevice numpy` and a UDP loopback test — no hardware required to write or unit-test it. Hardware is only needed for final ALSA validation and live latency tuning.
 
-### Phase 4: Bidirectional Audio
-Talk through the robot.
-- Research audio stacks (PipeWire on Deck, ALSA on Pi)
-- Pi mic → Steam Deck speaker (environment audio, UDP 5001)
-- Steam Deck mic → Pi speaker (operator voice, UDP 5002)
-- Push-to-talk UI controls
+## Active Beads issues
 
-## Task Tracking
+26 closed, 11 open. Use `bd list --pretty` after running `bd migrate --update-repo-id` (legacy DB on fresh clone). Open items map 1:1 to the Phase 4 hardware + code list above.
 
-Using [Beads](https://beads.dev) (`bd` CLI). 33 items tracked: 5 epics + 28 tasks with full dependency graph.
+## Open decisions / pending
 
-```
-bd ready          # See what's unblocked
-bd list --pretty  # Tree view of all tasks
-bd show <id>      # Task details
-bd update <id> --status in_progress  # Claim work
-bd close <id>     # Mark done
-```
+- **Power**: PD bank + 9V trigger module, decided 2026-05-09. PD trigger module (CH224K-based, ~$3) needs ordering.
+- **Motor voltage**: confirm motors are 6V TT-class (stay with PD 9V profile) vs 12V (switch to PD 12V profile). Motor sticker not yet read.
+- **PWM speed control**: deferred. ENA/ENB jumpers still in place. Future upgrade requires moving IN3 off GPIO 13 to free the PWM channel; not blocking Phase 4.
 
 ## Repository
 
 - Remote: `git@github.com:sankao/robothector.git`
 - Branch: `master`
-- No CI/CD, no test suite, no linter configured
+- No CI, no test suite, no linter — would be a Phase 5 nice-to-have
+
+## Reference docs
+
+- `docs/protocol.md` — WebSocket message schema
+- `docs/audio-design.md` — I2S overlay choice, ALSA config, jitter buffer sizing, GPIO 19 rewire reasoning
+- `docs/steamdeck-env.md` — networking notes specific to SteamOS (mDNS quirks etc.)
+- `docs/diagrams/wiring.{pdf,svg,tex}` — system-level block diagram
+- `docs/diagrams/pi-pinout.{pdf,svg,tex}` — full 40-pin GPIO header + wire-colour reference
+- `pinout.md` — text wiring tables
+- `CLAUDE.md` / `AGENTS.md` — agent-specific build notes
