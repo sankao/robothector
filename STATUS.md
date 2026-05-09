@@ -14,7 +14,15 @@ Robothector is a Raspberry Pi-powered robot vehicle with emergency-response them
 | 1 | Hardware diagnostics (GPIO, camera) | ✅ done |
 | 2 | Refactor to `client/` + `server/` + WS+JSON protocol | ✅ done |
 | 3 | Remote drive + MJPEG video + dead-man's switch + systemd unit | ✅ done |
-| **4** | **Bidirectional I2S audio (mic + amp + speaker)** | **🟠 in progress** |
+| 4a | Protocol module (typed messages) + 40 tests | ✅ done |
+| 4b | Audio packet wire format + jitter buffer + 35 tests | ✅ done |
+| 4c | Audio I/O abstraction (fakes + lazy sounddevice) + 13 tests | ✅ done |
+| 4d | `server/audio.py` + UDP loopback tests + 9 tests | ✅ done |
+| 4e | `client/audio.py` + engine refactor + 7 tests | ✅ done |
+| 4f | End-to-end loopback (server + client in one process) + 6 tests | ✅ done |
+| **4g** | **Wire PTT/listen buttons in `client/main.py` + UI icons** | **next** |
+| 4z | Hardware bringup (IN2 rewire, mic+amp wiring, I2S overlay) | ⏳ in parallel |
+| 5 | Final demo: drive + video + listen + talk over WiFi | ⏳ blocked on 4g + 4z |
 
 ## Current Hardware
 
