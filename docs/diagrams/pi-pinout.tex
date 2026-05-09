@@ -61,14 +61,14 @@
     20/pinGnd/GND/39      /pinPlanned/GPIO 21/40%
   }{%
      \node[\lstyle] (Lp\r) at (0, -\r*\rowstep) {\lpin};
-     \node[fnL] at ([xshift=-2mm]Lp\r.west) {\lfn};
+     \node[fnL] at ([xshift=-6mm]Lp\r.west) {\lfn};
      \node[\rstyle] (Rp\r) at (\colgap, -\r*\rowstep) {\rpin};
-     \node[fnR] at ([xshift=2mm]Rp\r.east) {\rfn};
+     \node[fnR] at ([xshift=6mm]Rp\r.east) {\rfn};
   }
 
-  % header outline — light frame so the pin circles dominate
-  \node[draw=green!50!black, thick, rounded corners=1pt, fit=(Lp1)(Rp20),
-        inner sep=4mm, fill=green!3, on background layer] (header) {};
+  % header outline — frame tight to pins, labels stay outside it
+  \node[draw=green!50!black, semithick, rounded corners=1pt, fit=(Lp1)(Rp20),
+        inner sep=2mm, fill=green!3, on background layer] (header) {};
 
   \node[font=\sffamily\bfseries\large, above=3mm of header.north]
         {Raspberry Pi 40-pin GPIO header (top-down view)};
