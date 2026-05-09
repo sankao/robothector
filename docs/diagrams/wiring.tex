@@ -1,6 +1,6 @@
 \documentclass[border=10pt]{standalone}
 \usepackage{tikz}
-\usetikzlibrary{arrows.meta,positioning,shapes.geometric,fit,calc,backgrounds}
+\usetikzlibrary{arrows.meta,positioning,shapes.geometric,shapes.symbols,fit,calc,backgrounds}
 
 \begin{document}
 \begin{tikzpicture}[
@@ -14,8 +14,12 @@
     motor/.style    ={draw, thick, circle, minimum size=13mm, fill=gray!12,
                       align=center, font=\sffamily\scriptsize},
     cam/.style      ={block, fill=green!10, minimum width=20mm, minimum height=14mm},
-    audio/.style    ={block, dashed, fill=orange!10, minimum width=30mm,
-                      minimum height=14mm, font=\sffamily\footnotesize, align=center},
+    audio/.style    ={block, dashed, fill=orange!10, minimum width=42mm,
+                      minimum height=14mm, font=\sffamily\footnotesize, align=left,
+                      inner sep=3pt},
+    spkr/.style     ={draw, thick, trapezium, trapezium left angle=70,
+                      trapezium right angle=110, fill=gray!15, minimum width=10mm,
+                      minimum height=8mm, font=\sffamily\scriptsize},
     pwr/.style      ={-{Stealth[length=2.2mm]}, line width=0.9mm, red!75!black},
     gnd/.style      ={-{Stealth[length=2.2mm]}, line width=0.5mm, black!70},
     ctrl/.style     ={-{Stealth[length=2mm]}, semithick},
@@ -45,11 +49,32 @@
   % USB-A 5V tail from the same bank, routed below to feed Pi
   \node[usb, below=18mm of cam] (usb) {USB-A 5V tail\\\footnotesize(same PD bank)};
 
-  % Audio modules: bottom-LEFT, below batt + L298N
-  \node[audio, below=26mm of batt, xshift=2mm] (mic)
-        {INMP441 I2S mic\\\scriptsize(in hand, not wired)};
-  \node[audio, right=10mm of mic] (amp)
-        {MAX98357A I2S amp\\+ small speaker\\\scriptsize(in hand, not wired)};
+  % Audio modules: bottom-LEFT, below batt + L298N — full pinouts inline
+  \node[audio, below=26mm of batt, xshift=2mm, anchor=north west] (mic)
+        {\textbf{INMP441 I2S mic}\\[1pt]
+         \scriptsize\begin{tabular}{@{}r@{\,}l@{}}
+           VDD & $\leftarrow$ Pi pin 1 (3.3V)\\
+           GND & $\leftarrow$ Pi GND\\
+           L/R & $\leftarrow$ GND (= left)\\
+           WS  & $\leftarrow$ GPIO 19 \textbf{\textcolor{red!75!black}{LRCLK}}\\
+           SCK & $\leftarrow$ GPIO 18 BCLK\\
+           SD  & $\rightarrow$ GPIO 20 DIN\\
+         \end{tabular}};
+  \node[audio, right=14mm of mic, anchor=north west] (amp)
+        {\textbf{MAX98357A I2S amp}\\[1pt]
+         \scriptsize\begin{tabular}{@{}r@{\,}l@{}}
+           VIN  & $\leftarrow$ Pi pin 2 (5V)\\
+           GND  & $\leftarrow$ Pi GND\\
+           LRC  & $\leftarrow$ GPIO 19 \textbf{\textcolor{red!75!black}{LRCLK}}\\
+           BCLK & $\leftarrow$ GPIO 18 BCLK\\
+           DIN  & $\leftarrow$ GPIO 21 DOUT\\
+           GAIN & open (default 9 dB)\\
+           SD   & open (un-muted)\\
+           +/$-$ & $\rightarrow$ speaker (4--8\,$\Omega$)\\
+         \end{tabular}};
+
+  % small speaker icon to the right of the amp
+  \node[spkr, right=4mm of amp, yshift=-3mm] (spk) {spk};
 
   % ============ POWER ============
   % bank → PD trigger (USB-C, PD negotiates 9V)
@@ -112,19 +137,14 @@
         node[wlbl, pos=0.5, right]{\scriptsize I2S bus};
   \draw[i2s, line width=0.6mm] (i2sBus) -- (busOverAmp);
 
-  % branch down to mic
-  \draw[i2s] (busOverMic) -- (mic.north)
-        node[wlbl, pos=0.5, right, align=left]
-            {\scriptsize GPIO18 BCLK\\
-             \scriptsize {\color{red!75!black}\textbf{GPIO19 LRCLK}}\\
-             \scriptsize GPIO20 DIN};
-
+  % branch down to mic — labels live inside the module node now, just route
+  \draw[i2s] (busOverMic) -- (mic.north);
   % branch down to amp
-  \draw[i2s] (busOverAmp) -- (amp.north)
-        node[wlbl, pos=0.5, right, align=left]
-            {\scriptsize GPIO18 BCLK\\
-             \scriptsize {\color{red!75!black}\textbf{GPIO19 LRCLK}}\\
-             \scriptsize GPIO21 DOUT};
+  \draw[i2s] (busOverAmp) -- (amp.north);
+
+  % speaker wires from amp's right side
+  \draw[pwr, line width=0.5mm] ([yshift= 1mm]amp.east) -- ([yshift= 1mm]spk.west);
+  \draw[gnd, line width=0.4mm] ([yshift=-1mm]amp.east) -- ([yshift=-1mm]spk.west);
 
   % ============ Phase 4 group box ============
   \begin{scope}[on background layer]
