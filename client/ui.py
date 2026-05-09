@@ -39,6 +39,15 @@ def render(screen: pygame.Surface, frame: pygame.Surface | None,
     if mode:
         _draw_mode(screen, mode)
 
+    # Audio status (top-left, below connection)
+    _draw_audio_status(
+        screen,
+        listen=bool(input_data.get("listen", False)),
+        talk=bool(input_data.get("talk", False)),
+        server_listen=bool((state or {}).get("audio_listen", False)),
+        server_talk=bool((state or {}).get("audio_talk", False)),
+    )
+
     # Joystick indicator (bottom-center)
     _draw_joystick_indicator(screen, input_data.get("axis_x", 0), input_data.get("axis_y", 0))
 
@@ -86,6 +95,52 @@ def _draw_mode(screen: pygame.Surface, mode: str):
     text = _font_large.render(mode.upper(), True, color)
     rect = text.get_rect(topright=(SCREEN_W - 20, 10))
     screen.blit(text, rect)
+
+
+def _draw_audio_status(screen: pygame.Surface, listen: bool, talk: bool,
+                        server_listen: bool, server_talk: bool):
+    """Draw 🔊 (listening) and 🎤 (transmitting) icons under the connection status.
+
+    A solid icon means the client requested it; an outline means the
+    server confirmed via state broadcast. Gray = idle.
+    """
+    base_y = 70
+    # Listen indicator (speaker shape)
+    listen_color = (0, 200, 0) if listen else (80, 80, 80)
+    if listen and not server_listen:
+        listen_color = (200, 180, 0)  # amber: requested but not yet confirmed
+    _draw_speaker_icon(screen, 14, base_y, listen_color)
+    label = _font.render("Listen" + (" *" if server_listen else ""),
+                          True, (200, 200, 200))
+    screen.blit(label, (38, base_y - 6))
+
+    # Talk indicator (mic shape)
+    base_y += 28
+    talk_color = (220, 60, 60) if talk else (80, 80, 80)
+    if talk and not server_talk:
+        talk_color = (200, 180, 0)
+    _draw_mic_icon(screen, 14, base_y, talk_color)
+    label = _font.render("Talk" + (" *" if server_talk else ""),
+                          True, (200, 200, 200))
+    screen.blit(label, (38, base_y - 6))
+
+
+def _draw_speaker_icon(screen: pygame.Surface, cx: int, cy: int,
+                        color: tuple[int, int, int]):
+    # cone-and-box speaker shape
+    pygame.draw.rect(screen, color, (cx - 4, cy - 4, 6, 8))
+    pygame.draw.polygon(
+        screen, color,
+        [(cx + 2, cy - 8), (cx + 8, cy - 12), (cx + 8, cy + 12), (cx + 2, cy + 8)],
+    )
+
+
+def _draw_mic_icon(screen: pygame.Surface, cx: int, cy: int,
+                    color: tuple[int, int, int]):
+    # capsule mic with stand
+    pygame.draw.ellipse(screen, color, (cx - 4, cy - 8, 8, 14))
+    pygame.draw.line(screen, color, (cx, cy + 6), (cx, cy + 11), 2)
+    pygame.draw.line(screen, color, (cx - 4, cy + 11), (cx + 4, cy + 11), 2)
 
 
 def _draw_joystick_indicator(screen: pygame.Surface, axis_x: float, axis_y: float):

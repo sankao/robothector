@@ -49,6 +49,14 @@ class NetworkClient:
         """Queue a mode command."""
         self._enqueue({"type": "mode", "mode": mode})
 
+    def send_audio_listen(self, enabled: bool):
+        """Tell the server to start/stop streaming its mic to us."""
+        self._enqueue({"type": "audio_listen", "enabled": bool(enabled)})
+
+    def send_audio_talk(self, enabled: bool):
+        """Tell the server we're about to start (or stop) sending audio to it."""
+        self._enqueue({"type": "audio_talk", "enabled": bool(enabled)})
+
     def get_state(self) -> dict | None:
         """Get the latest state from the server."""
         with self._state_lock:

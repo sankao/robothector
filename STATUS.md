@@ -20,9 +20,9 @@ Robothector is a Raspberry Pi-powered robot vehicle with emergency-response them
 | 4d | `server/audio.py` + UDP loopback tests + 9 tests | ✅ done |
 | 4e | `client/audio.py` + engine refactor + 7 tests | ✅ done |
 | 4f | End-to-end loopback (server + client in one process) + 6 tests | ✅ done |
-| **4g** | **Wire PTT/listen buttons in `client/main.py` + UI icons** | **next** |
+| 4g | Wire PTT/listen buttons in `client/main.py` + HUD icons | ✅ done |
 | 4z | Hardware bringup (IN2 rewire, mic+amp wiring, I2S overlay) | ⏳ in parallel |
-| 5 | Final demo: drive + video + listen + talk over WiFi | ⏳ blocked on 4g + 4z |
+| 5 | Final demo: drive + video + listen + talk over WiFi | ⏳ blocked on 4z |
 
 ## Current Hardware
 
