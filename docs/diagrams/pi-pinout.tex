@@ -137,6 +137,15 @@
                  \textcolor{wireYellow}{\rule{6mm}{3mm}} \textbf{yellow}};
   \draw[-{Stealth[length=2mm]}, thick, gray] (Rp6.east) -- (cBCLK.west);
 
+  % pin 11 GPIO 17 — future IN2 home (after the rewire) — left column row 6
+  \node[callout, anchor=east, draw=red!50, dashed, rounded corners,
+        fill=red!5, inner sep=3pt]
+        at ([xshift=-\leftPad,yshift=4mm]Lp6.west)
+        (cIN2new) {\textbf{future IN2 motor} (after rewire) \quad
+                   \textcolor{wireBlack}{\rule{6mm}{3mm}} \textbf{black}};
+  \draw[-{Stealth[length=2mm]}, thick, red!75!black]
+        (cIN2new.east) -- (Lp6.west);
+
   % pin 38 GPIO 20 — I2S SD (mic data → Pi)
   \node[callout, anchor=west] at ([xshift=\rightPad]Rp19.east)
         (cDIN) {\textbf{I2S SD} (mic data $\rightarrow$ Pi) \quad
@@ -186,7 +195,8 @@
       \textcolor{wireGray}{\rule{6mm}{3mm}}     & \textbf{gray}   --- IN4 motor (Pi p31)\\
     \end{tabular}\\[3pt]
     \footnotesize $^*$IN2 wire moves to Pi pin 11 (GPIO 17)\\
-    \footnotesize\quad when audio is added (frees GPIO 19 for LRCLK).};
+    \footnotesize\quad when audio is added (frees GPIO 19 for LRCLK).\\
+    \footnotesize\quad NOT GPIO 16: claimed by I2S overlay for amp SD\_MODE.};
 
   %================================================================
   % CONNECTION MAP
@@ -211,7 +221,8 @@
       38  & GPIO 20      & INMP441 SD\\
       40  & GPIO 21      & MAX98357A DIN\\
     \end{tabular}\\[3pt]
-    \footnotesize $^*$ rewire: free GPIO 19 by moving IN2 to GPIO 17 (Pi pin 11).};
+    \footnotesize $^*$ rewire: free GPIO 19 by moving IN2 to GPIO 17 (Pi pin 11) ---\\
+    \footnotesize\quad GPIO 16 is unavailable (claimed by I2S overlay for amp SD\_MODE).};
 
   %================================================================
   % TITLE
