@@ -21,19 +21,23 @@ max_bridge = 20;               // longest allowed unsupported bridge
 
 // ======================= fasteners ===========================
 // Tune these from fit_test.scad results; parts must never hard-code hole sizes.
-m3_tap_d   = 2.7;   // self-tap pilot
-m3_clear_d = 3.4;
+// 2026-10-17 coupon (PETG, MK3S+): M3 pilot 2.8 best both orientations (2.5-2.7 too tight);
+// modelled M5 thread best both orientations (4.1/4.3 pilots too tight); 2 mm rod: 2.4
+// (2.0/2.2 too tight); dovetail 0.15 decent but slightly loose -> 0.10. Holes print
+// ~0.2-0.4 mm small, so the clearance holes were opened by 0.2 (inferred, not tested).
+m3_tap_d   = 2.8;   // self-tap pilot (coupon 2026-10-17)
+m3_clear_d = 3.6;   // was 3.4; opened for the measured hole shrink
 m3_head_d  = 6.2;   // counterbore for socket head (5.5 nominal)
 m3_head_h  = 3.3;
 m5_pilot_d = 4.3;   // self-tap pilot (mode "pilot")
-m5_clear_d = 5.5;
+m5_clear_d = 5.7;   // was 5.5; opened for the measured hole shrink
 m5_head_d  = 9.2;
 m5_head_h  = 5.3;
 m5_pitch   = 0.8;
 m5_major   = 5.0;
 m5_thread_clr = 0.15;          // radial clearance added to the modelled thread
 m5_mode_vertical   = "thread"; // M5 holes whose axis is vertical in print orientation
-m5_mode_horizontal = "pilot";  // ... horizontal in print orientation (switch after coupon test)
+m5_mode_horizontal = "thread"; // ... horizontal in print orientation (coupon: thread works both ways)
 m2_tap_d   = 1.7;
 m25_tap_d  = 2.2;
 
@@ -97,7 +101,7 @@ TT_tab       = [5.0, 6, 2.4];      // tab length beyond gearbox end, tab height,
 OMNI_wheel_d    = 58;
 OMNI_wheel_w    = 29;              // assumed maximum
 OMNI_rod_d      = 2;
-OMNI_rod_hole_d = 2.2;
+OMNI_rod_hole_d = 2.4;             // coupon 2026-10-17 (2.2 too tight)
 OMNI_axle       = [66, 29];        // [x, z]
 OMNI_adj        = 4;               // +/- ride height adjustment of the cassette
 OMNI_well_x     = [33, 99];
@@ -119,6 +123,7 @@ J1_col_y    = [52, 70];            // |y| of the lower-carriage wall columns hol
 J1_col_x    = [-20, 0];
 J1_engage   = 12;                  // min thread engagement in the column
 J1_m5_mode  = m5_mode_horizontal;
+J1_dovetail_clr = 0.10;            // per side, tongue in notch (coupon: 0.15 slightly loose)
 
 // J2: upper carriage floor <-> lower carriage tops. 6x M3 vertical, heads inside the tray.
 J2_holes  = [[-45, 62], [-45, -62], [-150, 62], [-150, -62], [-229, 30], [-229, -30]]; // [x, y]

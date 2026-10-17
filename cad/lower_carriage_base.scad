@@ -37,10 +37,10 @@ lc_grid_depth = floor_t + 1;                // floor grid holes go through the f
 lc_holes     = true; // false skips the grids: faster CGAL for interference checks (holes only remove material)
 
 // ---------- grid exclusions ([u0, u1, v0, v1] in the grid's two coordinates) ----------
-lc_notch_hw = J1_tongue_w[1] / 2 + clr_slide;
+lc_notch_hw = J1_tongue_w[1] / 2 + J1_dovetail_clr;
 function lc_box(p, h) = [p[0] - h, p[0] + h, p[1] - h, p[1] + h];
 lc_floor_excl = concat(
-    [[J1_tongue_x[0] - clr_slide - grid_edge, 1e3, -(lc_notch_hw + grid_edge), lc_notch_hw + grid_edge],
+    [[J1_tongue_x[0] - J1_dovetail_clr - grid_edge, 1e3, -(lc_notch_hw + grid_edge), lc_notch_hw + grid_edge],
      [-1e3, lc_spine_x1 + (lc_spine_top - lc_floor_top) + grid_edge, -(lc_spine_hw + grid_edge), lc_spine_hw + grid_edge]],
     [for (h = J2_holes) lc_box(h, lc_boss_r + grid_edge - 0.1)]);
 lc_sh_excl_x = x_front_bay_rear + lc_sh_t + lc_sh_fillet + grid_edge - 0.1;  // shoulder gusset zone
@@ -142,7 +142,7 @@ module lc_fillets() {
 
 module lc_frame_cuts() {
     // J1 notch: the cabin's dovetail tongue drops in from above; keep its full height free
-    translate([0, 0, z_floor - 1]) linear_extrude(J1_tongue_z[1] - z_floor + 2) polygon(j1_tongue_pts(clr_slide));
+    translate([0, 0, z_floor - 1]) linear_extrude(J1_tongue_z[1] - z_floor + 2) polygon(j1_tongue_pts(J1_dovetail_clr));
     // J1: M5 along X into the columns, entry at the column front face, running -X
     for (b = J1_bolts) translate([lc_x1, b[0], b[1]]) into_x(-1) m5_hole(lc_j1_depth, J1_m5_mode);
     // J2: vertical M3 pilots from z_deck down into the bosses

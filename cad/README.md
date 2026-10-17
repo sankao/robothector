@@ -27,12 +27,14 @@ Coordinates: X forward, Y left, Z up; Z = 0 ground, X = 0 is the cabin/carriage 
 
 `3mf/00-fit_test-coupon_0.30mm.3mf` (PETG, 0.30 mm like the big parts, 4 perimeters, no supports, about 1 h 47 min, 28 g).
 
-| Feature | Pick | Then set in `robothector_base.scad` |
-|---|---|---|
-| M3 pilots 2.5/2.6/2.7/2.8 (vertical bosses + horizontal cubes) | Smallest one an M3 drives by hand without splitting | `m3_tap_d` |
-| M5: printed thread `T5` vs pilots 4.1/4.3 | Whether the printed thread takes a screw cleanly, in each orientation | `m5_pilot_d`, `m5_mode_vertical`, `m5_mode_horizontal` (J1/J3 holes are horizontal) |
-| 2 mm rod holes 2.0/2.2/2.4 | The one the rod slides through freely | `OMNI_rod_hole_d` |
-| Dovetail 0.15/0.25/0.35 | Slides in by hand without rattling | `clr_slide` |
+| Feature | Pick | Then set in `robothector_base.scad` | Result 2026-10-17 (PETG) |
+|---|---|---|---|
+| M3 pilots 2.5/2.6/2.7/2.8 (vertical bosses + horizontal cubes) | Smallest one an M3 drives by hand without splitting | `m3_tap_d` | **2.8** (both orientations) |
+| M5: printed thread `T5` vs pilots 4.1/4.3 | Whether the printed thread takes a screw cleanly, in each orientation | `m5_pilot_d`, `m5_mode_vertical`, `m5_mode_horizontal` (J1/J3 holes are horizontal) | **printed thread** both orientations |
+| 2 mm rod holes 2.0/2.2/2.4 | The one the rod slides through freely | `OMNI_rod_hole_d` | **2.4** |
+| Dovetail 0.15/0.25/0.35 | Slides in by hand without rattling | `J1_dovetail_clr` | 0.15 slightly loose, set **0.10** |
+
+Holes on this printer come out about 0.2–0.4 mm small, so the clearance holes were opened by 0.2 mm too (`m3_clear_d` 3.6, `m5_clear_d` 5.7). That is inferred from the coupon, not tested on it.
 
 Then run `openscad -o /tmp/x.echo fit_checks.scad`, `tools/export_all.sh` and `tools/make_3mf.py --check` to regenerate the STLs and plates.
 
@@ -45,16 +47,16 @@ and the layer profile in the file name. Times are PrusaSlicer estimates at those
 | Plate | Profile | Time | Filament |
 |---|---|---|---|
 | `00-fit_test-coupon_0.30mm` | 0.30mm DRAFT | 1 h 47 | 28 g |
-| `01-cabin-body_0.30mm` | 0.30mm DRAFT | 14 h 59 | 357 g |
-| `02-upper_carriage-tray_0.30mm` | 0.30mm DRAFT | 13 h 17 | 300 g |
-| `03-upper_carriage-lid_0.30mm` | 0.30mm DRAFT | 6 h 30 | 109 g |
-| `04-lower_carriage-frame_0.30mm` | 0.30mm DRAFT | 11 h 56 | 251 g |
-| `05-cabin-panels_0.20mm` (roof, faceplate, bumper) | 0.20mm SPEED | 8 h 50 | 116 g |
-| `06-cabin-small_0.20mm` (retainer, 2 cassettes, camera parts) | 0.20mm SPEED | 5 h 30 | 73 g |
+| `01-cabin-body_0.30mm` | 0.30mm DRAFT | 15 h 02 | 357 g |
+| `02-upper_carriage-tray_0.30mm` | 0.30mm DRAFT | 13 h 15 | 300 g |
+| `03-upper_carriage-lid_0.30mm` | 0.30mm DRAFT | 6 h 31 | 109 g |
+| `04-lower_carriage-frame_0.30mm` | 0.30mm DRAFT | 11 h 59 | 251 g |
+| `05-cabin-panels_0.20mm` (roof, faceplate, bumper) | 0.20mm SPEED | 8 h 51 | 116 g |
+| `06-cabin-small_0.20mm` (retainer, 2 cassettes, camera parts) | 0.20mm SPEED | 5 h 32 | 73 g |
 | `07-upper_carriage-small_0.20mm` (3 posts, 3 pushers, 2 stops, 5 knobs, plates, speaker ring) | 0.20mm SPEED | 5 h 51 | 68 g |
-| `08-lower_carriage-clamps_0.20mm` (2 clamps, 2 caps) | 0.20mm SPEED | 4 h 55 | 60 g |
+| `08-lower_carriage-clamps_0.20mm` (2 clamps, 2 caps) | 0.20mm SPEED | 4 h 54 | 60 g |
 
-Total about 73.5 h and 1.36 kg. Print the coupon at 0.30 mm like the big parts: they carry most of the pilot and M5 holes.
+Total about 73.6 h and 1.36 kg (after the coupon tuning). Print the coupon at 0.30 mm like the big parts: they carry most of the pilot and M5 holes.
 
 ## Print table
 
