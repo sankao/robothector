@@ -6,8 +6,13 @@
 include <lower_carriage_base.scad>
 
 part = "frame";
+ears = true;   // mouse ears on the frame (cut off after printing); -D ears=false for a plain frame
+lc_ear_pts = let(dx = ear_d / 2 - ear_x_out, wy = body_w / 2, ny = DRIVE_gearbox_face_y)
+    [[-clr_face - dx, wy + ear_y_out], [-clr_face - dx, -wy - ear_y_out],   // front corners
+     [x_rear + dx, ny + ear_y_out], [x_rear + dx, -ny - ear_y_out],         // rear (motor zone) corners
+     [x_front_bay_rear, wy], [x_front_bay_rear, -wy]];                       // front-bay rear corners
 
-if (part == "frame")                translate([0, 0, -z_floor]) lc_frame();
+if (part == "frame")                { translate([0, 0, -z_floor]) lc_frame(); if (ears) mouse_ears(lc_ear_pts); }
 else if (part == "tt_clamp")        translate([0, 0, -lc_floor_top]) lc_clamp_body();
 else if (part == "tt_clamp_mirror") translate([0, 0, -lc_floor_top]) mirror([0, 1, 0]) lc_clamp_body();
 else if (part == "tt_cap")          translate([0, 0, -lc_cl_top]) lc_cap();

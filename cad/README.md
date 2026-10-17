@@ -47,16 +47,18 @@ and the layer profile in the file name. Times are PrusaSlicer estimates at those
 | Plate | Profile | Time | Filament |
 |---|---|---|---|
 | `00-fit_test-coupon_0.30mm` | 0.30mm DRAFT | 1 h 47 | 28 g |
-| `01-cabin-body_0.30mm` | 0.30mm DRAFT | 15 h 02 | 357 g |
-| `02-upper_carriage-tray_0.30mm` | 0.30mm DRAFT | 13 h 15 | 300 g |
-| `03-upper_carriage-lid_0.30mm` | 0.30mm DRAFT | 6 h 31 | 109 g |
-| `04-lower_carriage-frame_0.30mm` | 0.30mm DRAFT | 11 h 59 | 251 g |
+| `01-cabin-body_0.30mm` | 0.30mm DRAFT | 15 h 11 | 359 g |
+| `02-upper_carriage-tray_0.30mm` | 0.30mm DRAFT | 13 h 22 | 301 g |
+| `03-upper_carriage-lid_0.30mm` | 0.30mm DRAFT | 6 h 36 | 110 g |
+| `04-lower_carriage-frame_0.30mm` | 0.30mm DRAFT | 12 h 06 | 252 g |
 | `05-cabin-panels_0.20mm` (roof, faceplate, bumper) | 0.20mm SPEED | 8 h 51 | 116 g |
 | `06-cabin-small_0.20mm` (retainer, 2 cassettes, camera parts) | 0.20mm SPEED | 5 h 32 | 73 g |
 | `07-upper_carriage-small_0.20mm` (3 posts, 3 pushers, 2 stops, 5 knobs, plates, speaker ring) | 0.20mm SPEED | 5 h 51 | 68 g |
 | `08-lower_carriage-clamps_0.20mm` (2 clamps, 2 caps) | 0.20mm SPEED | 4 h 54 | 60 g |
 
-Total about 73.6 h and 1.36 kg (after the coupon tuning). Print the coupon at 0.30 mm like the big parts: they carry most of the pilot and M5 holes.
+Total about 74 h and 1.37 kg.
+
+**Mouse ears:** the cabin body, tray, lid and frame (plates 01–04) have 2-layer, Ø24 discs fused to their corners against PETG corner lift. Cut them off after printing. Each part file has an `ears` switch (`-D ears=false` for a plain part); sizes are `ear_d`, `ear_h` in `robothector_base.scad`. On the 240 mm parts the ears are pulled in at the ends (at most 2.5 mm overhang) so the part still fits the bed, and reach out sideways instead. Print the coupon at 0.30 mm like the big parts: they carry most of the pilot and M5 holes.
 
 ## Print table
 

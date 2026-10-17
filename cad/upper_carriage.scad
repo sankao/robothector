@@ -5,9 +5,11 @@
 include <upper_carriage_base.scad>
 
 part = "tray";
+ears = true;   // mouse ears on the tray and lid (cut off after printing); -D ears=false for plain parts
+uc_ear_pts = ears_rect(x_rear, -clr_face, -body_w / 2, body_w / 2);
 
-if (part == "tray")              translate([0, 0, -z_deck]) uc_tray();                         // floor down
-else if (part == "lid")          translate([0, 0, z_uc_top + lid_t]) rotate([180, 0, 0]) uc_lid(); // top face down, hooks up
+if (part == "tray")              { translate([0, 0, -z_deck]) uc_tray(); if (ears) mouse_ears(uc_ear_pts); }   // floor down
+else if (part == "lid")          { translate([0, 0, z_uc_top + lid_t]) rotate([180, 0, 0]) uc_lid(); if (ears) mouse_ears(uc_ear_pts); } // top face down, hooks up
 else if (part == "clamp_post")   uc_clamp_post();                                              // base down
 else if (part == "pusher")       uc_pusher_print();                                            // screw side down
 else if (part == "rear_stop")    uc_rear_stop();                                               // base down

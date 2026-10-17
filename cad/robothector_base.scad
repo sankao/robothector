@@ -161,6 +161,18 @@ SCREEN_pillar  = 6;                // copper pillar between screen and Pi (unmea
 SCREEN_unit    = [108, 70, 45];    // envelope incl. Pi 4 and connectors (W, H, depth)
 SCREEN_cable_clear = 25;           // free depth behind the unit for cables
 
+// ======================= print aids ==========================
+// Mouse ears: thin discs fused to the first layers at a part's corners against PETG corner
+// lift on the big boxes; cut them off after printing. Added only in print orientation.
+ear_d     = 24;    // disc diameter
+ear_h     = 0.4;   // 2 layers with a 0.2 first layer (0.2 or 0.3 mm profiles)
+ear_x_out = 2.5;   // max overhang past the X ends (the long parts nearly fill the 250 mm bed)
+ear_y_out = 6;     // ear centre pushed this far outward past a side
+// Ear centres for the corners of a rectangular footprint [x0, x1] x [y0, y1].
+function ears_rect(x0, x1, y0, y1) = let(dx = ear_d / 2 - ear_x_out)
+    [[x0 + dx, y0 - ear_y_out], [x0 + dx, y1 + ear_y_out], [x1 - dx, y0 - ear_y_out], [x1 - dx, y1 + ear_y_out]];
+module mouse_ears(pts) for (p = pts) translate([p[0], p[1], 0]) cylinder(d = ear_d, h = ear_h);
+
 // ======================= helper functions ====================
 function grid_vals(r, pitch = grid_pitch, edge = grid_edge) =
     let(a = ceil((r[0] + edge) / pitch) * pitch, b = floor((r[1] - edge) / pitch) * pitch)

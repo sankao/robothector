@@ -19,7 +19,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 CAD = os.path.dirname(HERE)
 STL, OUT = os.path.join(CAD, "stl"), os.path.join(CAD, "3mf")
 GCODE_DIR = os.path.expanduser("~/cad/slices/robothector/plates")   # must be under $HOME (Flatpak sandbox)
-BED, MARGIN, GAP = (250.0, 210.0), 4.0, 6.0
+BED, MARGIN, GAP = (250.0, 210.0), 2.0, 6.0   # margin 2: the eared tray/lid/frame are 244.8 long
 PS = ["flatpak", "run", "--command=/app/bin/prusa-slicer", "com.prusa3d.PrusaSlicer"]
 COMMON = ["--printer-profile", "Original Prusa i3 MK3S & MK3S+", "--material-profile", "Generic PETG",
           "--perimeters", "4", "--fill-density", "15%", "--fill-pattern", "gyroid"]
