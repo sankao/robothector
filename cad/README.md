@@ -17,6 +17,7 @@ Design spec: [`docs/superpowers/specs/2026-10-17-chassis-redesign-design.md`](..
 | `cabin*.scad`, `upper_carriage*.scad`, `lower_carriage*.scad` | `*_base.scad` = modules; `*.scad -D part="..."` = one printable in print orientation |
 | `assembly.scad` | Everything in place: `-D show="all" \| "exploded" \| "parts" \| "vitamins"` |
 | `tools/export_all.sh` | Export and check every printable into `stl/` (manifold, bed size, on Z = 0) |
+| `tools/make_3mf.py [--check]` | Build the PrusaSlicer print plates in `3mf/`; `--check` slices each one (PETG, its layer profile) and writes ready G-code to `~/cad/slices/robothector/plates/` |
 | `tools/interference.py` | Pairwise intersection of assemblies and ghost parts (must be < 1 mm³) |
 | `tools/joint_probe.sh` | Bolt probes through J1/J2/J3: proves the holes line up (`joint_probe.sh 2` is the negative control) |
 
@@ -24,7 +25,7 @@ Coordinates: X forward, Y left, Z up; Z = 0 ground, X = 0 is the cabin/carriage 
 
 ## Print first: the fit coupon
 
-`stl/fit_test-coupon.stl` (PETG, 0.2 mm, 4 perimeters, no supports, about 2 h 40 min, 27 g).
+`3mf/00-fit_test-coupon_0.30mm.3mf` (PETG, 0.30 mm like the big parts, 4 perimeters, no supports, about 1 h 47 min, 28 g).
 
 | Feature | Pick | Then set in `robothector_base.scad` |
 |---|---|---|
@@ -33,7 +34,27 @@ Coordinates: X forward, Y left, Z up; Z = 0 ground, X = 0 is the cabin/carriage 
 | 2 mm rod holes 2.0/2.2/2.4 | The one the rod slides through freely | `OMNI_rod_hole_d` |
 | Dovetail 0.15/0.25/0.35 | Slides in by hand without rattling | `clr_slide` |
 
-Then run `openscad -o /tmp/x.echo fit_checks.scad` and `tools/export_all.sh` to regenerate the STLs.
+Then run `openscad -o /tmp/x.echo fit_checks.scad`, `tools/export_all.sh` and `tools/make_3mf.py --check` to regenerate the STLs and plates.
+
+## Print plates (3MF)
+
+Ready-to-open PrusaSlicer plates in `3mf/`: every part is its own object, already oriented and arranged on the MK3S+ bed.
+They carry no print settings (same as the other 3MFs in `~/cad`), so pick **Generic PETG, 4 perimeters, 15 % gyroid, supports off**
+and the layer profile in the file name. Times are PrusaSlicer estimates at those settings.
+
+| Plate | Profile | Time | Filament |
+|---|---|---|---|
+| `00-fit_test-coupon_0.30mm` | 0.30mm DRAFT | 1 h 47 | 28 g |
+| `01-cabin-body_0.30mm` | 0.30mm DRAFT | 14 h 59 | 357 g |
+| `02-upper_carriage-tray_0.30mm` | 0.30mm DRAFT | 13 h 17 | 300 g |
+| `03-upper_carriage-lid_0.30mm` | 0.30mm DRAFT | 6 h 30 | 109 g |
+| `04-lower_carriage-frame_0.30mm` | 0.30mm DRAFT | 11 h 56 | 251 g |
+| `05-cabin-panels_0.20mm` (roof, faceplate, bumper) | 0.20mm SPEED | 8 h 50 | 116 g |
+| `06-cabin-small_0.20mm` (retainer, 2 cassettes, camera parts) | 0.20mm SPEED | 5 h 30 | 73 g |
+| `07-upper_carriage-small_0.20mm` (3 posts, 3 pushers, 2 stops, 5 knobs, plates, speaker ring) | 0.20mm SPEED | 5 h 51 | 68 g |
+| `08-lower_carriage-clamps_0.20mm` (2 clamps, 2 caps) | 0.20mm SPEED | 4 h 55 | 60 g |
+
+Total about 73.5 h and 1.36 kg. Print the coupon at 0.30 mm like the big parts: they carry most of the pilot and M5 holes.
 
 ## Print table
 
