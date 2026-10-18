@@ -112,7 +112,7 @@ Set-screw lengths depend on the bank: `uc_clamp_report([L, W, H])` in `upper_car
 1. **Cabin internals:**
    - Put each omni-wheel and its 2 mm rod in a cassette.
    - Screw the cassettes into the wells (M3×16, mid-slot), and screw the bumper on (M3×20).
-   - Clamp the screen + Pi into the faceplate with the retainer (M3×16).
+   - Clamp the screen + Pi into the faceplate with the retainer (2× M3×16); see [exploded view](preview/cabin/screen_mount/exploded_front.png). The screen's own M2.5 corner holes are not used.
    - Connect the DSI ribbon, the camera ribbon, the right-angle USB-C and the GPIO jumpers.
    - Screw the faceplate on (M3×12).
 2. **Lower carriage:**
