@@ -55,6 +55,7 @@ and the layer profile in the file name. Times are PrusaSlicer estimates at those
 | `06-cabin-small_0.20mm` (retainer, 2 cassettes, camera parts) | 0.20mm SPEED | 5 h 32 | 73 g |
 | `07-upper_carriage-small_0.20mm` (3 posts, 3 pushers, 2 stops, 5 knobs, plates, speaker ring) | 0.20mm SPEED | 5 h 51 | 68 g |
 | `08-lower_carriage-clamps_0.20mm` (2 clamps, 2 caps) | 0.20mm SPEED | 4 h 54 | 60 g |
+| `09-rod_cutting_jig_0.20mm` (base + lid; tool, not part of the robot) | 0.20mm SPEED | 1 h 54 | 25 g |
 
 Total about 74 h and 1.37 kg.
 
@@ -86,6 +87,20 @@ PETG, 4 perimeters, 15 % gyroid, **no supports**. Times are PrusaSlicer estimate
 
 Total at 0.20 mm everywhere: about 94 h and 1.28 kg. Printing the four big parts at 0.30 mm brings it to about 72 h.
 (The first version on a 10 mm grid was about 111 h; the big parts' time is now mostly their solid 4 mm walls.)
+
+## Rod cutting jig
+
+`rod_jig.scad` (plate 09) cuts the 2 mm hardened axle rods to 37 ± 0.3 mm with a rotary tool.
+The rod lies in a V-groove against a fixed stop, and the lid (which prints as two halves) clamps it on both
+sides of a cut slot. The slot is the disc thickness plus 0.3 mm per side, placed so the piece is 37 ± 0.3 mm
+wherever the disc runs in it. Parameters: `jig_len` (other lengths), `disc_t` (your disc: about 1.1 mm reinforced,
+0.6 mm thin), `slot_clr`.
+
+1. Clamp the base in a vise. Square and deburr the rod end.
+2. Back the 4 lid screws (M3×12) off half a turn, slide the rod in from the open end to the stop, tighten.
+3. Cut down through the lid slot in short bursts, the disc just touching the slot walls (a spinning disc melts PETG).
+   The base is relieved around the cut so the hot steel does not sit on plastic.
+4. Loosen, lift out the piece, deburr the stock's new end before the next one.
 
 ## Hardware (bill of materials)
 

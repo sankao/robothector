@@ -43,6 +43,7 @@ PLATES = [
                                          ("upper_carriage-speaker_ring", 1)]),
     ("08-lower_carriage-clamps", "fine", [("lower_carriage-tt_clamp", 1), ("lower_carriage-tt_clamp_mirror", 1),
                                           ("lower_carriage-tt_cap", 2)]),
+    ("09-rod_cutting_jig", "fine", [("rod_jig-base", 1), ("rod_jig-lid", 1)]),
 ]
 
 spec = importlib.util.spec_from_file_location(
