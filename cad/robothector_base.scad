@@ -91,6 +91,7 @@ TT_shaft_from_tab_end = 11.0;      // shaft axis from the gearbox's tab end
 TT_shaft_d   = 5.5;
 TT_shaft_flat = 3.7;
 TT_shaft_len = 9.1;
+TT_shaft_in_len = 9.1;             // double-shaft TT: the same stub on the inboard face (0 for single-shaft)
 TT_clip_t    = 22.6;               // thickness over the motor clip
 TT_clip_len  = 20;                 // length of the clip region at the motor end (approx.)
 TT_hole_d    = 2.8;

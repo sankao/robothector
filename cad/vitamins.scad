@@ -96,9 +96,9 @@ module v_tt_motor() {
         for (z = [-TT_hole_dz/2, TT_hole_dz/2]) translate([-s0 + TT_hole_x, 1, z]) rotate([90, 0, 0]) cylinder(d = TT_hole_d, h = T + 2);
         translate([-s0 - TT_tab[2], 0, 0]) rotate([90, 0, 0]) cylinder(d = TT_hole_d, h = T + 2);
     }
-    color("white") intersection() {           // D shaft
-        rotate([-90, 0, 0]) cylinder(d = TT_shaft_d, h = TT_shaft_len);
-        translate([-TT_shaft_d/2, 0, -TT_shaft_flat/2]) cube([TT_shaft_d, TT_shaft_len, TT_shaft_flat]);
+    color("white") intersection() {           // D shaft, through the gearbox: outer stub + inner stub
+        translate([0, -T - TT_shaft_in_len, 0]) rotate([-90, 0, 0]) cylinder(d = TT_shaft_d, h = TT_shaft_in_len + T + TT_shaft_len);
+        translate([-TT_shaft_d/2, -T - TT_shaft_in_len, -TT_shaft_flat/2]) cube([TT_shaft_d, TT_shaft_in_len + T + TT_shaft_len, TT_shaft_flat]);
     }
 }
 module _side(side) { if (side > 0) children(); else mirror([0, 1, 0]) children(); }

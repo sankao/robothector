@@ -198,6 +198,7 @@ lc_cl_rfoot  = [[lc_cl_bolts[0][0] - 4.5, lc_cl_x[0]], [lc_cl_wall_y0, lc_rb_y0 
 lc_cl_pad_x  = [lc_cl_bolts[1][0] - 4, lc_cl_bolts[1][0] + 6]; // front pad, in front of the motor can
 lc_cl_finger_x  = [-153.5, lc_cl_wall_x[1]]; // outboard finger beside the motor clip, forward of the wheel
 lc_cl_finger_y1 = 51.5;
+lc_shaft_slot_w = TT_shaft_d + 2;     // slot in the inboard wall for a double-shaft TT's inner stub (open at the top)
 lc_cap_t     = 4;
 lc_cap_depth = 9;     // cap screw pilots: M3x12 through the 4 mm cap
 lc_cl_r      = 2;     // rounding of the cap corners
@@ -225,7 +226,7 @@ lc_slot = [[lc_tab_x0 - lc_fit, lc_rb_x1 + 1],      // tab slot [x, y, z] ranges
 lc_cl_finger_y0 = lc_clip_y[1] + lc_fit;
 lc_wall_mid  = (lc_cl_wall_y0 + lc_cl_face_y) / 2;
 lc_cap_screws = [[-217, (lc_slot[1][1] + DRIVE_gearbox_face_y) / 2],   // rear block, outboard post
-                 [-205, lc_wall_mid], [-170, lc_wall_mid],             // clamp wall
+                 [-209, lc_wall_mid], [-170, lc_wall_mid],             // clamp wall (clear of the shaft slot)
                  [(lc_cl_finger_x[0] + lc_cl_finger_x[1]) / 2, (lc_cl_finger_y0 + lc_cl_finger_y1) / 2]]; // finger
 
 // Sanity checks on the parameters (no geometry).
@@ -240,6 +241,9 @@ assert(lc_sh_y0 > lc_clip_y[1] + 2 && x_front_bay_rear + lc_sh_t < lc_cl_finger_
 for (b = lc_cl_bolts) assert(b[0] % grid_pitch == 0 && b[1] % grid_pitch == 0, "clamp bolt off the grid");
 assert(lc_cl_wall_x[0] < lc_gx[0] - TT_tab[0] && lc_cl_wall_x[1] > lc_gx[1], "clamp wall shorter than the gearbox");
 assert(lc_rb_y0 < lc_slot[1][0] - 4, "rear block too thin beside the tab slot");
+for (c = lc_cap_screws) assert(abs(c[0] - DRIVE_axle[0]) - lc_shaft_slot_w / 2 - m3_tap_d / 2 >= 1.5 || c[1] > lc_cl_face_y,
+    str("cap screw ", c, " too close to the inner-shaft slot"));
+assert(lc_gy[0] - TT_shaft_in_len > lc_spine_hw + 2, "inner shaft stub reaches the spine");
 echo(lc_tt_shaft = [lc_gx[0] + TT_shaft_from_tab_end, DRIVE_gearbox_face_y, lc_axle_z], DRIVE_axle = DRIVE_axle);
 
 // Clamp plan outline (also the cap outline before rounding).
@@ -273,6 +277,9 @@ module lc_clamp_body() {
         for (b = lc_cl_bolts) translate([b[0], b[1], lc_floor_top + lc_cl_foot_t]) m3_clear(lc_cl_foot_t + 1);
         // cap screw pilots
         for (c = lc_cap_screws) translate([c[0], c[1], lc_cl_top]) m3_tap(lc_cap_depth);
+        // inner stub of a double-shaft TT: slot through the wall, open at the top, round bottom
+        if (TT_shaft_in_len > 0) hull() for (z = [lc_axle_z, lc_cl_top + 1])
+            translate([DRIVE_axle[0], lc_cl_wall_y0 - 1, z]) rotate([-90, 0, 0]) cylinder(d = lc_shaft_slot_w, h = lc_cl_face_y - lc_cl_wall_y0 + 2);
         // optional M3 through the gearbox body holes: vertical slots in the wall
         for (s = [-1, 1]) hull() for (d = lc_tt_dz / 2)
             translate([lc_body_hole_x, lc_cl_wall_y0, lc_axle_z + s * d]) into_y(1) m3_clear(lc_cl_face_y - lc_cl_wall_y0 + 1);

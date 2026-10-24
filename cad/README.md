@@ -55,7 +55,7 @@ twist the four small combs out from under the lips with pliers after printing. T
 | `05-cabin-panels_0.20mm` (roof, bumper) | 0.20mm SPEED | 6 h 48 | 89 g |
 | `06-cabin-small_0.20mm` (2 cassettes, camera parts) | 0.20mm SPEED | 4 h 39 | 60 g |
 | `07-upper_carriage-small_0.20mm` (3 posts, 3 pushers, 2 stops, 5 knobs, plates, speaker ring) | 0.20mm SPEED | 5 h 51 | 68 g |
-| `08-lower_carriage-clamps_0.20mm` (2 clamps, 2 caps) | 0.20mm SPEED | 4 h 54 | 60 g |
+| `08-lower_carriage-clamps_0.20mm` (2 clamps, 2 caps) | 0.20mm SPEED | 4 h 58 | 59 g |
 | `09-rod_cutting_jig_0.20mm` (base + lid; tool, not part of the robot) | 0.20mm SPEED | 1 h 54 | 25 g |
 | `10-cabin-faceplate_0.20mm` (corner-lip faceplate, lip supports built in) | 0.20mm SPEED | 2 h 25 | 30 g |
 
@@ -65,6 +65,10 @@ Total about 74 h and 1.36 kg (robot plates and the coupon; the jig adds 1 h 54).
 board back is 8.5 mm behind the glass, with fixed 4 mm M2.5 standoffs at its corners. The faceplate's long-side rails now
 run out to the corners and overhang those standoffs. The screen slides in end-on and 4× M2.5×8 go through the lips.
 Builds that printed plate 05 before that date reprint only plate 10; the old retainer is not used.
+
+**TT clamps for double-shaft motors (2026-10-24):** the TT gearmotor's shaft comes out of both faces, and the inner stub
+hit the clamp's inboard wall. The wall now has a slot for it, open at the top, and the nearby cap screw moved 4 mm back
+(`lc_shaft_slot_w`, `TT_shaft_in_len` = 0 for single-shaft motors). Clamps and caps printed before that date: reprint plate 08.
 
 **Mouse ears:** the cabin body, tray, lid and frame (plates 01–04) have 2-layer, Ø24 discs fused to their corners against PETG corner lift. Cut them off after printing. Each part file has an `ears` switch (`-D ears=false` for a plain part); sizes are `ear_d`, `ear_h` in `robothector_base.scad`. On the 240 mm parts the ears are pulled in at the ends (at most 2.5 mm overhang) so the part still fits the bed, and reach out sideways instead. Print the coupon at 0.30 mm like the big parts: they carry most of the pilot and M5 holes.
 
