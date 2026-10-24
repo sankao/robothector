@@ -21,7 +21,7 @@ module P(n) import(str("stl/", n, ".stl"), convexity = 6);
 
 // ---------- screw glyphs ----------
 // p: point on the surface where the head seats; d: direction the screw travels (axis-aligned);
-// l: screw length; lead: how far outside the head floats (exploded); m: 3 or 5.
+// l: screw length; lead: how far outside the head floats (exploded); m: 2.5, 3 or 5.
 module along(d) {
     if (d == [0, 0, 1]) children();
     else if (d == [0, 0, -1]) rotate([180, 0, 0]) children();
@@ -31,7 +31,7 @@ module along(d) {
     else if (d == [0, -1, 0]) rotate([90, 0, 0]) children();
 }
 module screw(p, d, l, lead = 25, m = 3) {
-    hd = m == 5 ? 8.5 : 5.5; hh = m == 5 ? 5 : 3; sd = m == 5 ? 5 : 3;
+    hd = m == 5 ? 8.5 : m == 3 ? 5.5 : 4.5; hh = m == 5 ? 5 : m == 3 ? 3 : 2.5; sd = m;
     color(SCR) translate(p) along(d) {
         translate([0, 0, -lead - hh]) cylinder(d = hd, h = hh, $fn = 24);           // head, floating out
         translate([0, 0, -lead]) cylinder(d = sd, h = l, $fn = 16);                 // shank
@@ -41,7 +41,7 @@ module screw(p, d, l, lead = 25, m = 3) {
 
 // ---------- groups ----------
 module cabin_core(c = DONE, a = 1) color(c, a) { P("cab_body"); P("cab_cassette_l"); P("cab_cassette_r"); P("cab_bumper"); }
-module cabin_front(c = DONE)  { color(c) { P("cab_faceplate"); P("cab_retainer"); } cab_screen_place() v_screen_unit(); }
+module cabin_front(c = DONE)  { color(c) P("cab_faceplate"); cab_screen_place() v_screen_unit(); }
 module cabin_top(c = DONE)    color(c) { P("cab_roof"); P("cab_cam_bracket"); P("cab_cam_cradle"); P("cab_cam_clip"); }
 module cabin_all(c = DONE)    { cabin_core(c); cabin_front(c); cabin_top(c); cab_cam_tilted() cab_cam_place0() v_cam3();
                                 v_omni_wheel_placed(1); v_omni_wheel_placed(-1); }
@@ -88,11 +88,14 @@ else if (step == "bumper") {
     translate([E, 0, 0]) color(CAB) P("cab_bumper");
     for (s = cab_bump_screws) screw([x_cab_front + bumper_d + E, s[0], s[1]], [-1, 0, 0], 20, 25);
 }
-else if (step == "screen") {             // the faceplate / screen / retainer sandwich, exploded along X
-    translate([2 * E, 0, 0]) color(CAB) P("cab_faceplate");
-    translate([E, 0, 0]) cab_screen_place() v_screen_unit();
-    color(CAB2) P("cab_retainer");
-    for (sy = [-1, 1]) screw([cab_ret_x[0], sy * cab_ret_screw[0], cab_ret_screw[1]], [1, 0, 0], 16, 30);
+else if (step == "screen") {             // screen slid in from +Y under the four corner lips, then 4x M2.5 x 8
+    SL = 70;
+    color(CAB) P("cab_faceplate");
+    translate([0, SL, 0]) cab_screen_place() v_screen_unit();
+    color(SCR) translate([cab_board_back_x - 6, cab_scr_hw + SL + 10, cab_scr_z]) rotate([90, 0, 0]) {
+        cylinder(d = 3, h = 16, $fn = 16); translate([0, 0, 16]) cylinder(d1 = 9, d2 = 0, h = 10, $fn = 24);
+    }
+    for (sy = [-1, 1], sz = [-1, 1]) screw([cab_lip_x[0], sy * cab_so[0], cab_scr_z + sz * cab_so[1]], [1, 0, 0], cab_m25_l, 25, 2.5);
 }
 else if (step == "faceplate_on") {
     cabin_core(DONE); v_omni_wheel_placed(1); v_omni_wheel_placed(-1);

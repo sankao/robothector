@@ -25,9 +25,15 @@ module v_pi4() {
 // Local: origin at the centre of the glass front face; glass faces +Z (viewing direction);
 // X along the 106 mm width (viewer's right = +X), Y up. The unit extends to -Z.
 // The Pi's USB end overhangs the -X edge by about 1 mm (from the Waveshare drawing).
+// Measured: board back 8.5 behind the glass; corner standoffs and Pi pillars both 4 mm tall.
 module v_screen() {
     color("black") translate([-SCREEN_board[0]/2, -SCREEN_board[1]/2, -SCREEN_t]) cube([SCREEN_board[0], SCREEN_board[1], SCREEN_t]);
     color("dimgray") translate([-SCREEN_active[0]/2, -SCREEN_active[1]/2, -0.2]) cube([SCREEN_active[0], SCREEN_active[1], 0.3]);
+    color("silver") for (sx = [-1, 1], sy = [-1, 1])
+        translate([sx * SCREEN_corner_holes[0]/2, sy * SCREEN_corner_holes[1]/2, -SCREEN_t - SCREEN_standoff[1]]) difference() {
+            cylinder(d = SCREEN_standoff[0], h = SCREEN_standoff[1] + eps);
+            translate([0, 0, -1]) cylinder(d = 2.5, h = SCREEN_standoff[1] + 2);
+        }
 }
 module v_screen_unit() {
     v_screen();

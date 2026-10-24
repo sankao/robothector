@@ -42,7 +42,8 @@ Then run `openscad -o /tmp/x.echo fit_checks.scad`, `tools/export_all.sh` and `t
 
 Ready-to-open PrusaSlicer plates in `3mf/`: every part is its own object, already oriented and arranged on the MK3S+ bed.
 They carry no print settings (same as the other 3MFs in `~/cad`), so pick **Generic PETG, 4 perimeters, 15 % gyroid, supports off**
-and the layer profile in the file name. Times are PrusaSlicer estimates at those settings.
+and the layer profile in the file name. The faceplate (plate 10) has the supports for its four corner lips built in:
+twist the four small combs out from under the lips with pliers after printing. Times are PrusaSlicer estimates at those settings.
 
 | Plate | Profile | Time | Filament |
 |---|---|---|---|
@@ -51,13 +52,19 @@ and the layer profile in the file name. Times are PrusaSlicer estimates at those
 | `02-upper_carriage-tray_0.30mm` | 0.30mm DRAFT | 13 h 22 | 301 g |
 | `03-upper_carriage-lid_0.30mm` | 0.30mm DRAFT | 6 h 36 | 110 g |
 | `04-lower_carriage-frame_0.30mm` | 0.30mm DRAFT | 12 h 06 | 252 g |
-| `05-cabin-panels_0.20mm` (roof, faceplate, bumper) | 0.20mm SPEED | 8 h 51 | 116 g |
-| `06-cabin-small_0.20mm` (retainer, 2 cassettes, camera parts) | 0.20mm SPEED | 5 h 32 | 73 g |
+| `05-cabin-panels_0.20mm` (roof, bumper) | 0.20mm SPEED | 6 h 48 | 89 g |
+| `06-cabin-small_0.20mm` (2 cassettes, camera parts) | 0.20mm SPEED | 4 h 39 | 60 g |
 | `07-upper_carriage-small_0.20mm` (3 posts, 3 pushers, 2 stops, 5 knobs, plates, speaker ring) | 0.20mm SPEED | 5 h 51 | 68 g |
 | `08-lower_carriage-clamps_0.20mm` (2 clamps, 2 caps) | 0.20mm SPEED | 4 h 54 | 60 g |
 | `09-rod_cutting_jig_0.20mm` (base + lid; tool, not part of the robot) | 0.20mm SPEED | 1 h 54 | 25 g |
+| `10-cabin-faceplate_0.20mm` (corner-lip faceplate, lip supports built in) | 0.20mm SPEED | 2 h 25 | 30 g |
 
-Total about 74 h and 1.37 kg.
+Total about 74 h and 1.36 kg (robot plates and the coupon; the jig adds 1 h 54).
+
+**Faceplate v2 (2026-10-24):** the first faceplate's two pegs and the screen retainer assumed a 14 mm screen; the real
+board back is 8.5 mm behind the glass, with fixed 4 mm M2.5 standoffs at its corners. The faceplate's long-side rails now
+run out to the corners and overhang those standoffs. The screen slides in end-on and 4× M2.5×8 go through the lips.
+Builds that printed plate 05 before that date reprint only plate 10; the old retainer is not used.
 
 **Mouse ears:** the cabin body, tray, lid and frame (plates 01–04) have 2-layer, Ø24 discs fused to their corners against PETG corner lift. Cut them off after printing. Each part file has an `ears` switch (`-D ears=false` for a plain part); sizes are `ear_d`, `ear_h` in `robothector_base.scad`. On the 240 mm parts the ears are pulled in at the ends (at most 2.5 mm overhang) so the part still fits the bed, and reach out sideways instead. Print the coupon at 0.30 mm like the big parts: they carry most of the pilot and M5 holes.
 
@@ -69,8 +76,7 @@ PETG, 4 perimeters, 15 % gyroid, **no supports**. Times are PrusaSlicer estimate
 |---|---|---|---|---|
 | cabin-body | 1 | upright, floor down | 23 h 35 | 14 h 59 |
 | cabin-roof | 1 | flat | 3 h 22 | |
-| cabin-faceplate | 1 | face down | 2 h 03 | |
-| cabin-screen_retainer | 1 | flat | 0 h 52 | |
+| cabin-faceplate | 1 | face down; 4 support combs built in under the corner lips | 2 h 25 | |
 | cabin-bumper | 1 | rear face down | 3 h 27 | |
 | cabin-omni_cassette | 2 | roof down | 1 h 42 each | |
 | cabin-camera_bracket / cradle / clip | 1 each | as exported | 1 h 34 total | |
@@ -110,13 +116,14 @@ wherever the disc runs in it. Parameters: `jig_len` (other lengths), `disc_t` (y
 | M3×8 | 16 | clamp posts (6), L298N plate (4), PD plate (2), speaker ring (4) |
 | M3×10 | 3 | camera bracket to roof grid |
 | M3×12 | 30 | roof (6), faceplate (4), camera clip (2), lid thumbscrews (2), side set screws (2), TT clamps to floor (6), TT caps (8) |
-| M3×16 | 22 | J2 tray to frame (6), omni cassettes (8), screen retainer (2), camera pivot (1), front set screw (1), rear stops (4) |
+| M3×16 | 20 | J2 tray to frame (6), omni cassettes (8), camera pivot (1), front set screw (1), rear stops (4) |
 | M3×20 | 4 | bumper |
 | M3×25 | 0–6 | optional, through the TT gearbox holes; also set screws for small banks |
 | M5×20 | 4 | J1 cabin to frame (2, heads inside the cabin), J3 tray to bulkhead (2, heads inside the tray) |
+| M2.5×8 | 4 | screen corner standoffs to the faceplate lips (8 mm exactly: longer reaches the LCD) |
 | 2 mm steel rod, ~37 mm | 2 | omni-wheel axles (trapped by the well walls, no collar) |
 | 20 mm hook-and-loop strap, ~350 mm | 1–2 | power bank hold-down |
-| Foam tape 1–3 mm | some | bank pusher pads (1 mm), screen retainer, TT cap |
+| Foam tape 1–3 mm | some | bank pusher pads (1 mm), TT cap |
 | Zip tie | 1 | PD trigger |
 | Right-angle USB-C / USB-A leads | 2 | bank to PD trigger, bank to Pi |
 
@@ -127,7 +134,7 @@ Set-screw lengths depend on the bank: `uc_clamp_report([L, W, H])` in `upper_car
 1. **Cabin internals:**
    - Put each omni-wheel and its 2 mm rod in a cassette.
    - Screw the cassettes into the wells (M3×16, mid-slot), and screw the bumper on (M3×20).
-   - Clamp the screen + Pi into the faceplate with the retainer (2× M3×16); see [exploded view](preview/cabin/screen_mount/exploded_front.png). The screen's own M2.5 corner holes are not used.
+   - Lay the faceplate face down and slide the screen + Pi in end-on, glass down, USB ports first, under the four corner lips until it meets the stops; then 4× M2.5×8 through the lips into the screen's corner standoffs. See [the manual view](preview/manual/screen.png).
    - Connect the DSI ribbon, the camera ribbon, the right-angle USB-C and the GPIO jumpers.
    - Screw the faceplate on (M3×12).
 2. **Lower carriage:**

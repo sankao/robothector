@@ -8,7 +8,7 @@ use <../lower_carriage_base.scad>
 
 part = "cab_body";
 
-PARTS = ["cab_body", "cab_roof", "cab_faceplate", "cab_retainer", "cab_bumper", "cab_cassette_l", "cab_cassette_r",
+PARTS = ["cab_body", "cab_roof", "cab_faceplate", "cab_bumper", "cab_cassette_l", "cab_cassette_r",
          "cab_cam_bracket", "cab_cam_cradle", "cab_cam_clip",
          "uc_tray", "uc_lid", "uc_posts", "uc_pushers", "uc_clamp_knobs", "uc_lid_knobs", "uc_stops", "uc_l298n_plate", "uc_pd_plate",
          "uc_speaker_ring", "lc_frame", "lc_clamp_l", "lc_clamp_r", "lc_cap_l", "lc_cap_r"];
@@ -17,7 +17,6 @@ if (part == "list") echo(parts = PARTS);
 else if (part == "cab_body") cab_body();
 else if (part == "cab_roof") cab_roof();
 else if (part == "cab_faceplate") cab_faceplate();
-else if (part == "cab_retainer") cab_retainer();
 else if (part == "cab_bumper") cab_bumper();
 else if (part == "cab_cassette_l") cab_cassette(0);
 else if (part == "cab_cassette_r") mirror([0, 1, 0]) cab_cassette(0);

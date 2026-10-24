@@ -3,7 +3,7 @@
 
 usage: make_3mf.py            build every plate in PLATES
        make_3mf.py --check    also slice each plate (MK3S+, Generic PETG, the plate's layer
-                              profile, 4 perimeters, 15% gyroid, no supports) and report time,
+                              profile, 4 perimeters, 15% gyroid, supports only for SUPPORTED) and report time,
                               grams and any out-of-bed error; G-code lands in
                               ~/cad/slices/robothector/plates/ (ready to print).
 
@@ -34,8 +34,8 @@ PLATES = [
     ("02-upper_carriage-tray", "draft", [("upper_carriage-tray", 1)]),
     ("03-upper_carriage-lid", "draft", [("upper_carriage-lid", 1)]),
     ("04-lower_carriage-frame", "draft", [("lower_carriage-frame", 1)]),
-    ("05-cabin-panels", "fine", [("cabin-roof", 1), ("cabin-faceplate", 1), ("cabin-bumper", 1)]),
-    ("06-cabin-small", "fine", [("cabin-screen_retainer", 1), ("cabin-omni_cassette", 2),
+    ("05-cabin-panels", "fine", [("cabin-roof", 1), ("cabin-bumper", 1)]),
+    ("06-cabin-small", "fine", [("cabin-omni_cassette", 2),
                                 ("cabin-camera_bracket", 1), ("cabin-camera_cradle", 1), ("cabin-camera_clip", 1)]),
     ("07-upper_carriage-small", "fine", [("upper_carriage-clamp_post", 3), ("upper_carriage-pusher", 3),
                                          ("upper_carriage-rear_stop", 2), ("upper_carriage-knob", 5),
@@ -44,7 +44,11 @@ PLATES = [
     ("08-lower_carriage-clamps", "fine", [("lower_carriage-tt_clamp", 1), ("lower_carriage-tt_clamp_mirror", 1),
                                           ("lower_carriage-tt_cap", 2)]),
     ("09-rod_cutting_jig", "fine", [("rod_jig-base", 1), ("rod_jig-lid", 1)]),
+    ("10-cabin-faceplate", "fine", [("cabin-faceplate", 1)]),
 ]
+# Plates that need slicer supports (none: the faceplate's lip supports are modelled in the part).
+SUPPORTED = set()
+SUPPORT_ARGS = ["--support-material", "--support-material-auto", "--support-material-threshold", "30"]
 
 spec = importlib.util.spec_from_file_location(
     "stl_stats", os.path.expanduser("~/.claude/skills/openscad-cli/stl_stats.py"))
@@ -142,15 +146,16 @@ def main():
             z.writestr("3D/3dmodel.model", model_xml(objects))
         print(f"OK   {name}.3mf: {len(parts)} objects, print with {PROFILES[prof]}")
         if "--check" in sys.argv:
-            rc |= check(name, prof)
+            rc |= check(name, prof, base in SUPPORTED)
     return rc
 
 
-def check(name, prof):
+def check(name, prof, supports=False):
     os.makedirs(GCODE_DIR, exist_ok=True)
     g = os.path.join(GCODE_DIR, name + ".gcode")
     if os.path.exists(g): os.remove(g)
-    r = subprocess.run(PS + ["--export-gcode"] + COMMON + ["--print-profile", PROFILES[prof], "-o", g,
+    extra = SUPPORT_ARGS if supports else []
+    r = subprocess.run(PS + ["--export-gcode"] + COMMON + ["--print-profile", PROFILES[prof]] + extra + ["-o", g,
                              os.path.join(OUT, name + ".3mf")], capture_output=True, text=True)
     log = r.stdout + r.stderr
     if r.returncode != 0 or not os.path.exists(g) or "outside of the print volume" in log:

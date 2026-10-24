@@ -21,14 +21,14 @@ cab_corner_r   = 3;      // outer vertical front edges (plan fillet)
 cab_rear_chamfer = 1;    // outer vertical rear edges (chamfer; rear face mates the carriages)
 
 // ---- screen + Pi unit (glass facing +X, unrotated: GPIO header up, USB-C down,
-//      USB/Ethernet end at -Y). Touches: faceplate back (glass), retainer (board back).
+//      USB/Ethernet end at -Y). Touches: faceplate back (glass), corner lips (standoff tops).
 cab_fp_t       = 6;                         // faceplate thickness (X [99, 105]); also the bezel lip depth
 cab_fp_back_x  = x_cab_front - cab_fp_t;    // 99
 cab_glass_x    = cab_fp_back_x;             // glass front bears on the faceplate back
 cab_scr_z      = 109;                       // screen centre Z (unit Z 74..144, USB-C plug clears Z 70)
 cab_scr_hw     = SCREEN_board[0]/2;         // 53
 cab_scr_hh     = SCREEN_board[1]/2;         // 34
-cab_board_back_x = cab_glass_x - SCREEN_t;  // 84.95
+cab_board_back_x = cab_glass_x - SCREEN_t;  // 90.5
 cab_fp_y       = faceplate_opening[0][1] - clr_slide;  // 65.75: faceplate half-width
 cab_fp_z       = [faceplate_opening[1][0], faceplate_opening[1][1] - clr_face]; // Z [70, 145.8]
 cab_fp_window_m = 0.5;                      // window margin around SCREEN_active (per side)
@@ -41,20 +41,25 @@ cab_fp_pillar_y0 = 56.75;                   // pillar inner face |y|: 7.5 mm bos
 cab_pi_port_y  = 56.2;                       // |y| reached by the Pi's USB/Ethernet ports (v_screen_unit: 56.12)
 cab_usbc_y     = [13.5, 26];                 // right-angle USB-C plug zone under the Pi (port y 15.2..24.2)
 cab_usbc_face_z = cab_scr_z - 28.04 - 1;      // Pi USB-C port face (v_screen_unit, unrotated)
-cab_usbc_notch = [[68, 84], cab_usbc_face_z - BANK_plug_clear - 2]; // notch in the +Y inner well wall top: x range, floor z
+cab_usbc_x     = cab_glass_x - SCREEN_t - SCREEN_pillar - 1.4 - 3.5 / 2; // Pi USB-C port centre X (83.35)
+cab_usbc_notch = [[cab_usbc_x - 8, cab_usbc_x + 8], cab_usbc_face_z - BANK_plug_clear - 2]; // notch in the +Y inner well wall top: x range, floor z
 cab_fp_pillars = [[80, 98], [120, cab_wall_top]]; // [z0, z1] full section; 45 deg chin below z0
 cab_fp_rail_d  = 7;                         // board locating rails on the faceplate back (X depth)
-cab_fp_rail_hw = 45;                        // rail half-length in Y
-// Retainer frame: clamps the board back against the faceplate; 2x M3 x 16 into faceplate standoffs.
-cab_ret_t      = 5;                          // 1 mm clear of the Pi board behind
-cab_ret_x      = [cab_board_back_x - cab_ret_t, cab_board_back_x];
-cab_ret_out_y  = 55;                        // frame outer |y| (slides out past the body pillars at 56)
-cab_ret_in_y   = 42;                         // frame inner |y| (Pi pillars at |y| <= 33)
-cab_ret_bar    = 6;                         // top/bottom bar height (clear of the Pi pillars)
-cab_ret_screw  = [57.5, cab_scr_z];         // [|y|, z] retainer screws / faceplate standoffs
-cab_ret_boss_d = 8;                          // faceplate standoffs (clear of the board edge)
-cab_ret_pad_d  = 10;                         // retainer screw pads
-cab_ret_pilot  = 12;
+cab_fp_rail_hw = cab_scr_hw + 0.4;          // rail half-length in Y: out to the corner lips (53.4)
+// Corner lips: the top/bottom rails run out to the screen's corner standoffs and overhang them;
+// 4x M2.5 x 8 through the lips into the standoffs. The board's long edges sit under the lips, so
+// the screen slides in end-on from +Y (the DSI-ribbon end), glass down, until it meets the -Y stops:
+// everything on the Pi's long edges passes under the lips on the way. Lips print over supports.
+cab_so         = [SCREEN_corner_holes[0]/2, SCREEN_corner_holes[1]/2]; // [|y|, |z - cab_scr_z|] standoff centres
+cab_so_top_x   = cab_board_back_x - SCREEN_standoff[1];   // 86.5: standoff tops
+cab_lip_gap    = 0.25;                       // lip underside above the standoff tops (slide clearance)
+cab_m25_l      = 8;                          // the M2.5 screws on hand
+cab_lip_t      = cab_m25_l - SCREEN_standoff[1];  // 4: the screw fills the standoff and stops at the board
+cab_lip_x      = [cab_so_top_x - cab_lip_gap - cab_lip_t, cab_so_top_x - cab_lip_gap]; // X [82.25, 86.25]
+cab_pi_edge_out = 2;                        // allowance for ports standing proud of the Pi's long edges
+cab_lip_dz     = 56 / 2 + cab_pi_edge_out;   // 30: lip inner edge |z - cab_scr_z| (Pi long edges at 28)
+cab_lip_y      = [cab_so[0] - 3.75, cab_fp_rail_hw];      // |y| [45.9, 53.4]
+cab_stop_y     = [cab_scr_hw + 0.35, cab_scr_hw + 2.35];  // -Y end stops |y| [53.35, 55.35]
 
 // ---- J1 pads and J3 bosses on the bulkhead
 cab_j1_pad_t   = 2;                         // head bears on bulkhead + pad = 6 mm
@@ -151,7 +156,10 @@ echo(str("CAB J3 pilot depth = ", cab_j3_depth, " (M5x16..20 engage ", cab_j3_sc
 assert(cab_cas_top_max < OMNI_well_top_z, "cassette roof pokes above the well top");
 assert(cab_scr_z - SCREEN_unit[1]/2 >= OMNI_well_top_z, "screen unit dips below Z 70");
 assert(cab_scr_z + SCREEN_unit[1]/2 <= cab_fp_z[1], "screen unit above the faceplate top");
-assert(cab_ret_out_y < cab_fp_pillar_y0, "retainer cannot slide out past the faceplate pillars");
+assert(cab_stop_y[1] < cab_fp_pillar_y0, "screen stops cannot slide out past the faceplate pillars");
+assert(cab_lip_dz < cab_so[1], "lip inner edge past the standoff centre");
+assert(cab_so[1] + SCREEN_standoff[0]/2 <= cab_scr_hh + clr_slide, "standoffs outside the rails");
+assert(cab_so[0] + SCREEN_standoff[0]/2 <= cab_lip_y[1] && cab_so[0] - SCREEN_standoff[0]/2 >= cab_lip_y[0], "lip shorter than the standoff");
 assert(cab_pi_port_y < cab_fp_pillar_y0, "Pi ports cannot slide out past the faceplate pillars");
 assert(cab_usbc_notch[1] < OMNI_well_top_z && cab_usbc_notch[1] > cab_cas_top_max - 2, "USB-C notch floor out of range");
 echo(str("CAB USB-C plug bottom Z = ", cab_usbc_face_z - BANK_plug_clear, ", notch floor Z = ", cab_usbc_notch[1]));
@@ -353,7 +361,8 @@ module cab_roof() {
 
 // ======================= FACEPLATE =================================
 // Plate X [99, 105] between the side walls, Z 70..145.8. Bezel window on SCREEN_active.
-// Back: board locating rails (bottom/top) + 2 standoffs for the retainer screws.
+// Back: board locating rails (bottom/top) ending in 4 corner lips over the screen's standoffs,
+// plus -Y end stops. The screen slides in from +Y under the lips (see "Corner lips" above).
 module cab_faceplate() {
     x0 = cab_fp_back_x; t = cab_fp_t; hy = cab_fp_y; z = cab_fp_z;
     w = [SCREEN_active[0] + 2 * cab_fp_window_m, SCREEN_active[1] + 2 * cab_fp_window_m];
@@ -370,9 +379,20 @@ module cab_faceplate() {
                 translate([-cab_fp_rail_hw, z[0]]) square([2 * cab_fp_rail_hw, cab_scr_z - cab_scr_hh - clr_slide - z[0]]);
                 translate([-cab_fp_rail_hw, cab_scr_z + cab_scr_hh + clr_slide]) square([2 * cab_fp_rail_hw, z[1] - cab_scr_z - cab_scr_hh - clr_slide]);
             }
-            // retainer standoffs, beside the board (also locate it in Y)
-            cab_mirror_y() translate([cab_board_back_x, cab_ret_screw[0], cab_ret_screw[1]])
-                rotate([0, 90, 0]) cylinder(d = cab_ret_boss_d, h = x0 - cab_board_back_x + eps);
+            // corner towers: rail wall up to the lip, lip over the standoff; -Y towers carry the end stops
+            rz = cab_scr_hh + clr_slide;   // rail inner face, |z - cab_scr_z|
+            for (sy = [-1, 1], sz = [-1, 1]) {
+                ya = sy > 0 ? cab_lip_y[0] : -cab_stop_y[1];
+                yb = sy > 0 ? cab_lip_y[1] : -cab_lip_y[0];
+                ze = sz > 0 ? z[1] : z[0];
+                cab_yz(cab_lip_x[0], x0 - cab_lip_x[0] + eps) {
+                    translate([ya, min(cab_scr_z + sz * rz, ze)]) square([yb - ya, abs(ze - cab_scr_z) - rz]);
+                    if (sy < 0) translate([-cab_stop_y[1], min(cab_scr_z + sz * cab_lip_dz, ze)])
+                        square([cab_stop_y[1] - cab_stop_y[0], abs(ze - cab_scr_z) - cab_lip_dz]);
+                }
+                cab_yz(cab_lip_x[0], cab_lip_t)
+                    translate([ya, min(cab_scr_z + sz * cab_lip_dz, cab_scr_z + sz * rz)]) square([yb - ya, rz - cab_lip_dz]);
+            }
         }
         // window + 45 deg front chamfer
         translate([x0 - 1, -w[0]/2, cab_scr_z - w[1]/2]) cube([t + 2, w[0], w[1]]);
@@ -382,27 +402,31 @@ module cab_faceplate() {
         }
         // body screws, heads counterbored in the face
         cab_mirror_y() for (s = cab_fp_screws) translate([x_cab_front, s[0], s[1]]) into_x(-1) m3_clear(t + 1, cab_fp_cbore);
-        // retainer pilots in the standoffs
-        cab_mirror_y() translate([cab_board_back_x, cab_ret_screw[0], cab_ret_screw[1]]) into_x(1) m3_tap(cab_ret_pilot);
+        // M2.5 clearance through the lips, on the standoffs
+        for (sy = [-1, 1], sz = [-1, 1]) translate([cab_lip_x[0], sy * cab_so[0], cab_scr_z + sz * cab_so[1]])
+            into_x(1) _bore(m25_clear_d, cab_lip_t + 1);
     }
 }
 
-// ======================= SCREEN RETAINER ===========================
-// Frame behind the screen board (clear of the Pi's pillars), clamps it onto the faceplate.
-module cab_retainer() {
-    zb = cab_scr_z - cab_scr_hh; zt = cab_scr_z + cab_scr_hh; b = cab_ret_bar;
-    difference() {
-        cab_yz(cab_ret_x[0], cab_ret_t) {
-            difference() {
-                offset(r = 2) offset(delta = -2) translate([-cab_ret_out_y, zb]) square([2 * cab_ret_out_y, zt - zb]);
-                offset(r = 2) offset(delta = -2) translate([-cab_ret_in_y, zb + b]) square([2 * cab_ret_in_y, zt - zb - 2 * b]);
-            }
-            for (s = [-1, 1]) hull() {
-                translate([s * cab_ret_screw[0], cab_ret_screw[1]]) circle(d = cab_ret_pad_d);
-                translate([s > 0 ? cab_ret_in_y : -cab_ret_out_y, cab_ret_screw[1] - 7]) square([cab_ret_out_y - cab_ret_in_y, 14]);
-            }
+// Print-only breakaway supports under the 4 corner lips (cabin.scad adds them to the faceplate
+// printable; never in the assembly): a grid of thin walls standing on the faceplate back, one layer
+// (0.2 mm) short of the lip and clear of the tower and stop faces. Twist them out with pliers.
+cab_sup_w   = 0.8;
+cab_sup_gap = 0.2;
+module cab_fp_lip_supports() {
+    rz = cab_scr_hh + clr_slide; side = 0.5; w = cab_sup_w;
+    x0 = cab_lip_x[1] + cab_sup_gap; x1 = cab_fp_back_x + eps;
+    for (sy = [-1, 1], sz = [-1, 1]) {
+        ya = sy > 0 ? cab_lip_y[0] : -cab_stop_y[0] + side;
+        yb = sy > 0 ? cab_lip_y[1] : -cab_lip_y[0];
+        za = sz > 0 ? cab_scr_z + cab_lip_dz : cab_scr_z - rz + side;   // lower Z bound of the comb
+        zb = sz > 0 ? cab_scr_z + rz - side : cab_scr_z - cab_lip_dz;   // upper Z bound
+        translate([x0, 0, 0]) {
+            for (i = [0:2]) let(yc = ya + w/2 + (yb - ya - w) * i / 2)   // 3 walls across Y
+                translate([0, yc - w/2, za]) cube([x1 - x0, w, zb - za]);
+            for (zc = [za + w/2, zb - w/2])                             // 2 walls along Y
+                translate([0, ya, zc - w/2]) cube([x1 - x0, yb - ya, w]);
         }
-        cab_mirror_y() translate([cab_ret_x[0], cab_ret_screw[0], cab_ret_screw[1]]) into_x(1) m3_clear(cab_ret_t + 1);
     }
 }
 
@@ -521,7 +545,6 @@ module cab_assembled(tilt = cab_cam_tilt, adj = 0) {
     color("SteelBlue") cab_body();
     color("LightSteelBlue") cab_roof();
     color("CadetBlue") cab_faceplate();
-    color("SlateGray") cab_retainer();
     color("OrangeRed") cab_bumper();
     color("Goldenrod") { cab_cassette(adj); mirror([0, 1, 0]) cab_cassette(adj); }
     color("DarkCyan") cab_cam_bracket();

@@ -153,11 +153,13 @@ BANK_strap_w    = 22;
 
 // ======================= screen + Pi unit ====================
 SCREEN_board   = [106, 68];        // Waveshare 4.3" DSI
-SCREEN_t       = 14.05;
+SCREEN_t       = 8.5;              // glass front to board back (measured; Waveshare's 14.05 "overall" includes the Pi)
 SCREEN_active  = [94, 56];         // approx. 800x480 4.3" active area, assumed centred
 SCREEN_corner_holes = [99.3, 61.8];
-SCREEN_corner_hole_d = 2.7;        // probably M2.5; user has no M2.5 screws -> prefer a clamp frame
-SCREEN_pillar  = 6;                // copper pillar between screen and Pi (unmeasured)
+SCREEN_corner_hole_d = 2.7;
+SCREEN_standoff = [5, 4];          // fixed M2.5 female standoffs in the corner holes, on the board back: d (est.), h (measured)
+SCREEN_pillar  = 4;                // copper pillar between screen and Pi (measured)
+m25_clear_d    = 3.1;              // M2.5 clearance (2.7 nominal + the measured hole shrink)
 SCREEN_unit    = [108, 70, 45];    // envelope incl. Pi 4 and connectors (W, H, depth)
 SCREEN_cable_clear = 25;           // free depth behind the unit for cables
 
